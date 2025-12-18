@@ -1,0 +1,49 @@
+<?php
+
+namespace Database\Seeders;
+
+use App\Models\User;
+use App\Models\MaterialType;
+use App\Models\Project;
+// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Database\Seeder;
+
+class DatabaseSeeder extends Seeder
+{
+    /**
+     * Seed the application's database.
+     */
+    public function run(): void
+    {
+        $admin = User::updateOrCreate(
+            ['email' => 'admin@example.com'],
+            [
+                'name' => 'Administrator',
+                'password' => bcrypt('admin123'),
+                'is_admin' => true,
+            ]
+        );
+
+        $defaultUser = User::updateOrCreate(
+            ['email' => 'user@example.com'],
+            [
+                'name' => 'Użytkownik',
+                'password' => bcrypt('password123'),
+                'is_admin' => false,
+            ]
+        );
+
+        $types = ['Drewno', 'Stal', 'Aluminium', 'Kompozyt'];
+        foreach ($types as $typeName) {
+            MaterialType::firstOrCreate(['name' => $typeName]);
+        }
+
+        Project::firstOrCreate(
+            ['name' => 'Przykładowy projekt'],
+            [
+                'client_name' => 'Klient Demo',
+                'created_by' => $admin->id,
+            ]
+        );
+    }
+}
