@@ -17,6 +17,7 @@ class SettingController extends Controller
     {
         $validated = $request->validate([
             'key' => 'required|string|max:255|unique:settings,key',
+            'friendly_name' => 'nullable|string|max:255',
             'value' => 'nullable|string',
         ]);
 
@@ -29,6 +30,7 @@ class SettingController extends Controller
     {
         $validated = $request->validate([
             'key' => 'required|string|max:255|unique:settings,key,' . $setting->id,
+            'friendly_name' => 'nullable|string|max:255',
             'value' => 'nullable|string',
         ]);
 
