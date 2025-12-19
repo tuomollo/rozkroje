@@ -232,6 +232,7 @@ class FileProcessingController extends Controller
         $highestRow = $sheet->getHighestDataRow();
         $lastColumnIndex = Coordinate::columnIndexFromString($sheet->getHighestDataColumn());
         $materialColumnIndex = $this->getMaterialColumnIndex($sheet);
+        $objectNameColumnIndex = ProgramConfig::getConfig('object_name_column_index',1);
 
         $materials = Material::with('type')->get();
         $materialLookup = [];
@@ -256,7 +257,6 @@ class FileProcessingController extends Controller
             $materialKey = Str::lower($materialName);
             $material = $materialLookup[$materialKey] ?? null;
             if (!$material || !$material->type) {
-                // skip rows with unresolved materials
                 continue;
             }
 
@@ -274,6 +274,12 @@ class FileProcessingController extends Controller
             /** @var MaterialType $type */
             $type = $payload['type'];
             $rows = $payload['rows'] ?? [];
+            // sortujemy wiersze po nazwie obiektu
+            usort($rows, function ($a, $b) use ($objectNameColumnIndex) {
+                $aVal = $a[$objectNameColumnIndex - 1] ?? '';
+                $bVal = $b[$objectNameColumnIndex - 1] ?? '';
+                return strcmp((string) $aVal, (string) $bVal);
+            });
 
             $resultSheet = new Spreadsheet();
             $active = $resultSheet->getActiveSheet();
@@ -307,11 +313,55 @@ class FileProcessingController extends Controller
 
             $active->getStyle('A1:B1')->applyFromArray($styleArray);
 
-            $rowIndex = 2;
+            // Przekopiuj wiersz nagłówka
+            $active->getColumnDimension('A')->setWidth(30);
+            $active->getColumnDimension('B')->setWidth(20);
+            for ($col = 1; $col <= $lastColumnIndex; $col++) {
+                $sourceCell = $sheet->getCell([$col, 1]);
+                $active->setCellValue([$col, 2], $sourceCell->getValue());
+                $active->duplicateStyle(
+                    $sheet->getStyle([$col, 1]),
+                    \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col) . '2'
+                );
+            }
+
+            $rowIndex = 3;
+            $previousGroup = null;
+            $insertedOtherSection = false;
+            $groupStyle = [
+                'font' => ['bold' => true],
+                'fill' => [
+                    'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                    'startColor' => ['argb' => 'FFCCCCCC'],
+                ],
+            ];
+
             foreach ($rows as $rowData) {
+                $currentGroup = trim((string) ($rowData[0] ?? ''));
+                $startsWithNumber = $currentGroup !== '' && preg_match('/^\d/', $currentGroup);
+                if ($startsWithNumber && $currentGroup !== $previousGroup) {
+                    // pusty wiersz jako odstęp
+                    if ($rowIndex > 3) {                        
+                        $rowIndex++;
+                    }
+                    // wiersz nagłówkowy sekcji
+                    $active->setCellValue([$objectNameColumnIndex, $rowIndex], $currentGroup);
+                    $active->getStyle([$objectNameColumnIndex, $rowIndex])->applyFromArray($groupStyle);
+                    $rowIndex++;
+                }
+                if (!$startsWithNumber && !$insertedOtherSection) {
+                    $rowIndex++;
+                    $active->setCellValue([$objectNameColumnIndex, $rowIndex], 'Inne elementy');
+                    $active->getStyle([$objectNameColumnIndex, $rowIndex])->applyFromArray($groupStyle);
+                    $rowIndex++;
+                    $insertedOtherSection = true;
+                }
+
                 foreach ($rowData as $colIndex => $value) {
                     $active->setCellValue([$colIndex + 1, $rowIndex], $value);
                 }
+
+                $previousGroup = $startsWithNumber ? $currentGroup : $previousGroup;
                 $rowIndex++;
             }
 
