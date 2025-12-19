@@ -44,6 +44,25 @@ a {
   justify-content: space-between;
   gap: 20px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  background-image: url('./assets/icon.png');
+  background-repeat: no-repeat;
+  background-position: 16px center;
+  background-size: 56px 56px;
+  padding-left: 96px;
+}
+
+.title-row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 10px;
+}
+
+.app-icon {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  border-radius: 8px;
 }
 
 .eyebrow {

@@ -20,8 +20,7 @@ const handleLogout = () => {
 <template>
   <div class="app-shell">
     <header class="hero header">
-      <div>
-        <p class="eyebrow">Skywood</p>
+      <div class="title-row">
         <h1>Rozkroje</h1>
       </div>
       <div class="user-chip" v-if="state.user">
