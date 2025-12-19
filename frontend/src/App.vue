@@ -273,10 +273,10 @@ onMounted(async () => {
   <div class="page">
     <header class="hero">
       <div>
-        <p class="eyebrow">Rozkroje · Laravel + Vue</p>
-        <h1>Segmentacja arkuszy XLS według materiałów</h1>
+        <p class="eyebrow">Skywood</p>
+        <h1>Rozkroje</h1>
         <p class="lede">
-          Wgraj arkusz, przypisz typy materiałów i pobierz paczkę ZIP z osobnymi plikami dla każdego typu.
+          <!--Wgraj arkusz, przypisz typy materiałów i pobierz paczkę ZIP z osobnymi plikami dla każdego materiału.-->
         </p>
       </div>
       <div class="user-chip" v-if="user">
@@ -290,7 +290,6 @@ onMounted(async () => {
 
     <main v-if="!user" class="panel">
       <h2>Zaloguj się</h2>
-      <p class="hint">Domyślny administrator: admin@example.com / admin123</p>
       <form class="form-grid" @submit.prevent="login">
         <label>
           <span>Email</span>

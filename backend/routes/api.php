@@ -37,5 +37,7 @@ Route::middleware('auth:api')->group(function () {
 
     Route::post('/uploads/inspect', [FileProcessingController::class, 'inspect']);
     Route::post('/uploads/process', [FileProcessingController::class, 'process']);
-    Route::get('/downloads/{token}', [FileProcessingController::class, 'download']);
 });
+
+// Public download endpoint – auth token not required
+Route::get('/downloads/{token}', [FileProcessingController::class, 'download']);
