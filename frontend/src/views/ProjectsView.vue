@@ -8,21 +8,36 @@ const statusMessage = ref('')
 const showCreate = ref(false)
 const currentPage = ref(1)
 const pageSize = 10
+const search = ref('')
 
-const totalPages = computed(() => Math.max(1, Math.ceil(state.projects.length / pageSize)))
+const filteredProjects = computed(() => {
+  const term = search.value.toLowerCase()
+  if (!term) return state.projects
+  return state.projects.filter((project) => {
+    const name = project.name?.toLowerCase() ?? ''
+    const client = project.client?.full_name?.toLowerCase() ?? ''
+    return name.includes(term) || client.includes(term)
+  })
+})
+
+const totalPages = computed(() => Math.max(1, Math.ceil(filteredProjects.value.length / pageSize)))
 const paginatedProjects = computed(() => {
   const start = (currentPage.value - 1) * pageSize
-  return state.projects.slice(start, start + pageSize)
+  return filteredProjects.value.slice(start, start + pageSize)
 })
 
 watch(
-  () => state.projects.length,
+  () => filteredProjects.value.length,
   () => {
     if (currentPage.value > totalPages.value) {
       currentPage.value = totalPages.value
     }
   },
 )
+
+watch(search, () => {
+  currentPage.value = 1
+})
 
 const createItem = async () => {
   if (!newProject.name || !newProject.client_id) return
@@ -98,9 +113,12 @@ ensureClients()
         <p class="eyebrow">Projekty</p>
         <h3>Zarządzaj</h3>
       </div>
-      <button v-if="state.user?.is_admin" class="ghost" @click="showCreate = !showCreate">
-        {{ showCreate ? 'Schowaj' : 'Nowy' }}
-      </button>
+      <div class="actions">
+        <input v-model="search" placeholder="Szukaj po projekcie lub kliencie..." />
+        <button v-if="state.user?.is_admin" class="ghost" @click="showCreate = !showCreate">
+          {{ showCreate ? 'Schowaj' : 'Nowy' }}
+        </button>
+      </div>
     </div>
     <form v-if="showCreate && state.user?.is_admin" class="form-grid" @submit.prevent="createItem">
       <input v-model="newProject.name" placeholder="Nazwa projektu" required />
