@@ -1,10 +1,27 @@
 <script setup>
-import { reactive, ref } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { createProject, deleteProject, state, updateProject } from '../stores/appStore'
 
 const newProject = reactive({ name: '', client_name: '' })
 const editProjectForm = reactive({ id: null, name: '', client_name: '' })
 const statusMessage = ref('')
+const currentPage = ref(1)
+const pageSize = 10
+
+const totalPages = computed(() => Math.max(1, Math.ceil(state.projects.length / pageSize)))
+const paginatedProjects = computed(() => {
+  const start = (currentPage.value - 1) * pageSize
+  return state.projects.slice(start, start + pageSize)
+})
+
+watch(
+  () => state.projects.length,
+  () => {
+    if (currentPage.value > totalPages.value) {
+      currentPage.value = totalPages.value
+    }
+  },
+)
 
 const createItem = async () => {
   if (!newProject.name || !newProject.client_name) return
@@ -45,9 +62,20 @@ const removeProject = async (projectId) => {
   try {
     await deleteProject(projectId)
     statusMessage.value = 'Projekt usunięty.'
+    if ((currentPage.value - 1) * pageSize >= state.projects.length && currentPage.value > 1) {
+      currentPage.value -= 1
+    }
   } catch (error) {
     statusMessage.value = error.response?.data?.message ?? 'Usuwanie nie powiodło się.'
   }
+}
+
+const nextPage = () => {
+  if (currentPage.value < totalPages.value) currentPage.value += 1
+}
+
+const prevPage = () => {
+  if (currentPage.value > 1) currentPage.value -= 1
 }
 </script>
 
@@ -66,7 +94,7 @@ const removeProject = async (projectId) => {
     </form>
     <p v-if="statusMessage" class="hint">{{ statusMessage }}</p>
     <div class="list">
-      <div v-for="project in state.projects" :key="project.id" class="row">
+      <div v-for="project in paginatedProjects" :key="project.id" class="row">
         <div class="row-main">
           <strong>{{ project.name }}</strong>
           <span class="muted">{{ project.client_name }}</span>
@@ -76,6 +104,11 @@ const removeProject = async (projectId) => {
           <button class="ghost danger" @click="removeProject(project.id)">Usuń</button>
         </div>
       </div>
+    </div>
+    <div class="pagination" v-if="state.projects.length > pageSize">
+      <button class="ghost" @click="prevPage" :disabled="currentPage === 1">Poprzednia</button>
+      <span>Strona {{ currentPage }} / {{ totalPages }}</span>
+      <button class="ghost" @click="nextPage" :disabled="currentPage === totalPages">Następna</button>
     </div>
     <div v-if="editProjectForm.id" class="inline-edit">
       <h4>Edytuj projekt</h4>

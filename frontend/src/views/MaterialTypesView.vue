@@ -51,7 +51,7 @@ const removeItem = async (typeId) => {
     <div class="card-head">
       <div>
         <p class="eyebrow">Typy materiałów</p>
-        <h3>CRUD dla administratora</h3>
+        <h3>Zarządzanie materiałami - uwaga, nie popsuć!</h3>
       </div>
     </div>
     <form class="form-grid" @submit.prevent="createItem">

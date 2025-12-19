@@ -114,7 +114,7 @@ watch(
         <p class="eyebrow">Analiza pliku</p>
         <h3>Upload i przypisanie materiałów</h3>
       </div>
-      <div class="tag">{{ state.projects.length }} projektów</div>
+      <!--div class="tag">{{ state.projects.length }} projektów</div-->
     </div>
     <div class="split">
       <div class="stack">
@@ -136,7 +136,7 @@ watch(
             Sprawdź materiały
           </button>
           <button class="ghost" @click="processUpload" :disabled="loading || !uploadToken">
-            Podziel arkusz i utwórz ZIP
+            Generuj
           </button>
         </div>
         <p v-if="statusMessage" class="hint">{{ statusMessage }}</p>
