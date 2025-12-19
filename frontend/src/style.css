@@ -25,16 +25,13 @@ a {
   color: #7dd3fc;
 }
 
-#app {
+.app-shell {
   max-width: 1200px;
   margin: 0 auto;
   padding: 48px 20px 64px;
-}
-
-.page {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 16px;
 }
 
 .hero {
@@ -61,6 +58,54 @@ h1 {
   margin: 0;
   font-size: 32px;
   color: #f8fafc;
+}
+
+.shell-body {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 16px;
+}
+
+.shell-body:not(.with-sidebar) {
+  grid-template-columns: 1fr;
+}
+
+.content {
+  min-height: 60vh;
+}
+
+.sidebar {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 16px;
+  height: fit-content;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.25);
+}
+
+.side-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.side-nav a {
+  text-decoration: none;
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: #e2e8f0;
+  border: 1px solid transparent;
+  transition: background 0.15s ease, transform 0.1s ease, border-color 0.15s ease;
+}
+
+.side-nav a:hover {
+  transform: translateX(2px);
+  border-color: rgba(125, 211, 252, 0.4);
+}
+
+.side-nav a.active {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(129, 140, 248, 0.2));
+  border-color: rgba(125, 211, 252, 0.6);
 }
 
 .lede {
@@ -301,6 +346,10 @@ button:hover:not(:disabled) {
 }
 
 @media (max-width: 720px) {
+  .shell-body {
+    grid-template-columns: 1fr;
+  }
+
   .hero {
     flex-direction: column;
     align-items: flex-start;

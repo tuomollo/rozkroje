@@ -92,12 +92,22 @@ class FileProcessingController extends Controller
         return response()->json([
             'download_url' => url('/api/downloads/' . $session->token),
             'files' => $result['files'],
+            'file_urls' => $result['file_urls'],
         ]);
     }
 
-    public function download(string $token)
+    public function download(string $token, ?string $filename = null)
     {
         $session = UploadSession::where('token', $token)->firstOrFail();
+
+        if ($filename) {
+            $exportPath = "exports/{$session->token}/{$filename}";
+            if (!Storage::exists($exportPath)) {
+                return response()->json(['message' => 'Plik nie jest dostępny.'], 404);
+            }
+
+            return Storage::download($exportPath);
+        }
 
         if (!$session->result_path || !Storage::exists($session->result_path)) {
             return response()->json(['message' => 'Plik nie jest dostępny.'], 404);
@@ -264,6 +274,13 @@ class FileProcessingController extends Controller
         return [
             'zip_path' => $zipPath,
             'files' => array_map('basename', $files),
+            'file_urls' => array_map(function (string $filePath) use ($session) {
+                $filename = basename($filePath);
+                return [
+                    'name' => $filename,
+                    'url' => url('/api/downloads/' . $session->token . '/' . $filename),
+                ];
+            }, $files),
         ];
     }
 }
