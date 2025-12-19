@@ -40,6 +40,7 @@ const updateItem = async () => {
 }
 
 const removeItem = async (typeId) => {
+  if (!window.confirm('Czy jesteś pewien, że chcesz usunąć ten element?')) return
   statusMessage.value = ''
   try {
     await deleteMaterialType(typeId)
@@ -58,7 +59,7 @@ const removeItem = async (typeId) => {
         <h3>Zarządzanie materiałami - uwaga, nie popsuć!</h3>
       </div>
       <button class="ghost" @click="showCreate = !showCreate">
-        {{ showCreate ? 'Schowaj' : 'Nowy' }}
+        {{ showCreate ? 'Schowaj' : '➕' }}
       </button>
     </div>
     <form v-if="showCreate" class="form-grid" @submit.prevent="createItem">
@@ -67,7 +68,7 @@ const removeItem = async (typeId) => {
         <input type="checkbox" v-model="newMaterialType.has_grain" />
         <span>Ma usłojenie</span>
       </label>
-      <button type="submit">Dodaj</button>
+      <button type="submit">Nowy</button>
     </form>
     <p v-if="statusMessage" class="hint">{{ statusMessage }}</p>
     <div class="list">
@@ -76,8 +77,8 @@ const removeItem = async (typeId) => {
           <strong>{{ type.name }}</strong>
         </div>
         <div class="row-actions">
-          <button class="ghost" @click="startEdit(type)">Edytuj</button>
-          <button class="ghost danger" @click="removeItem(type.id)">Usuń</button>
+          <button class="ghost" @click="startEdit(type)">🖉</button>
+          <button class="ghost danger" @click="removeItem(type.id)">🗑️</button>
         </div>
         <div v-if="editMaterialType.id === type.id" class="inline-edit">
           <h4>Edytuj typ</h4>

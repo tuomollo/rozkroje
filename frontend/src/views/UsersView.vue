@@ -50,6 +50,7 @@ const updateItem = async () => {
 }
 
 const removeItem = async (id) => {
+  if (!window.confirm('Czy jesteś pewien, że chcesz usunąć ten element?')) return
   statusMessage.value = ''
   try {
     await deleteUser(id)
@@ -68,7 +69,7 @@ const removeItem = async (id) => {
         <h3>Konta i uprawnienia</h3>
       </div>
       <button class="ghost" @click="showCreate = !showCreate">
-        {{ showCreate ? 'Schowaj' : 'Nowy' }}
+        {{ showCreate ? 'Schowaj' : '➕' }}
       </button>
     </div>
     <form v-if="showCreate" class="form-grid" @submit.prevent="createItem">
@@ -79,7 +80,7 @@ const removeItem = async (id) => {
         <input type="checkbox" v-model="newUser.is_admin" />
         <span>Administrator</span>
       </label>
-      <button type="submit">Dodaj</button>
+      <button type="submit">Nowy</button>
     </form>
     <p v-if="statusMessage" class="hint">{{ statusMessage }}</p>
     <div class="list">
@@ -92,8 +93,8 @@ const removeItem = async (id) => {
           </span>
         </div>
         <div class="row-actions">
-          <button class="ghost" @click="startEdit(item)">Edytuj</button>
-          <button class="ghost danger" @click="removeItem(item.id)">Usuń</button>
+          <button class="ghost" @click="startEdit(item)">🖉</button>
+          <button class="ghost danger" @click="removeItem(item.id)">🗑️</button>
         </div>
         <div v-if="editUserForm.id === item.id" class="inline-edit">
           <h4>Edytuj użytkownika</h4>

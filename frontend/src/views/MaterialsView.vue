@@ -76,6 +76,7 @@ const submitEdit = async () => {
 }
 
 const removeItem = async (id) => {
+  if (!window.confirm('Czy jesteś pewien, że chcesz usunąć ten element?')) return
   statusMessage.value = ''
   try {
     await deleteMaterial(id)
@@ -109,7 +110,7 @@ const prevPage = () => {
       </div>
       <div class="actions">
         <input v-model="search" placeholder="Szukaj po nazwie..." />
-        <button class="ghost" @click="showCreate = !showCreate">{{ showCreate ? 'Schowaj' : 'Nowy' }}</button>
+        <button class="ghost" @click="showCreate = !showCreate">{{ showCreate ? 'Schowaj' : '➕' }}</button>
       </div>
     </div>
 
@@ -123,7 +124,7 @@ const prevPage = () => {
         <input type="checkbox" v-model="newMaterial.has_grain" />
         <span>Ma usłojenie</span>
       </label>
-      <button type="submit">Dodaj</button>
+      <button type="submit">Nowy</button>
     </form>
 
     <p v-if="statusMessage" class="hint">{{ statusMessage }}</p>
@@ -137,8 +138,8 @@ const prevPage = () => {
           </span>
         </div>
         <div class="row-actions">
-          <button class="ghost" @click="startEdit(item)">Edytuj</button>
-          <button class="ghost danger" @click="removeItem(item.id)">Usuń</button>
+          <button class="ghost" @click="startEdit(item)">🖉</button>
+          <button class="ghost danger" @click="removeItem(item.id)">🗑️</button>
         </div>
         <div v-if="editMaterial.id === item.id" class="inline-edit">
           <h4>Edytuj materiał</h4>

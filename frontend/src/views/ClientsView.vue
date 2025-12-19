@@ -76,6 +76,7 @@ const submitEdit = async () => {
 }
 
 const removeItem = async (id) => {
+  if (!window.confirm('Czy jesteś pewien, że chcesz usunąć ten element?')) return
   statusMessage.value = ''
   try {
     await deleteClient(id)
@@ -104,7 +105,7 @@ const prevPage = () => {
       <div class="actions">
         <input v-model="search" placeholder="Szukaj po imieniu, nazwisku, emailu..." />
         <button v-if="state.user?.is_admin" class="ghost" @click="showCreate = !showCreate">
-          {{ showCreate ? 'Schowaj' : 'Nowy' }}
+          {{ showCreate ? 'Schowaj' : '➕' }}
         </button>
       </div>
     </div>
@@ -114,7 +115,7 @@ const prevPage = () => {
       <input v-model="newClient.last_name" placeholder="Nazwisko" required />
       <input v-model="newClient.email" type="email" placeholder="Email (opcjonalnie)" />
       <input v-model="newClient.phone" placeholder="Telefon (opcjonalnie)" />
-      <button type="submit">Dodaj</button>
+      <button type="submit">Nowy</button>
     </form>
 
     <p v-if="statusMessage" class="hint">{{ statusMessage }}</p>
@@ -127,8 +128,8 @@ const prevPage = () => {
           <span class="muted">{{ client.phone || 'brak telefonu' }}</span>
         </div>
         <div class="row-actions">
-          <button v-if="state.user?.is_admin" class="ghost" @click="startEdit(client)">Edytuj</button>
-          <button v-if="state.user?.is_admin" class="ghost danger" @click="removeItem(client.id)">Usuń</button>
+          <button v-if="state.user?.is_admin" class="ghost" @click="startEdit(client)">🖉</button>
+          <button v-if="state.user?.is_admin" class="ghost danger" @click="removeItem(client.id)">🗑️</button>
         </div>
         <div v-if="state.user?.is_admin && editClient.id === client.id" class="inline-edit">
           <h4>Edytuj klienta</h4>

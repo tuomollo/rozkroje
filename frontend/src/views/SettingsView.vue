@@ -77,6 +77,7 @@ const updateItem = async () => {
 }
 
 const removeItem = async (id) => {
+  if (!window.confirm('Czy jesteś pewien, że chcesz usunąć ten element?')) return
   statusMessage.value = ''
   try {
     await deleteSetting(id)
@@ -105,7 +106,7 @@ const prevPage = () => {
       <div class="actions">
         <input v-model="search" placeholder="Szukaj po nazwie/kluczu..." />
         <button class="ghost" @click="showCreate = !showCreate">
-          {{ showCreate ? 'Schowaj' : 'Nowy' }}
+          {{ showCreate ? 'Schowaj' : '➕' }}
         </button>
       </div>
     </div>
@@ -114,7 +115,7 @@ const prevPage = () => {
       <input v-model="newSetting.key" placeholder="Klucz" required />
       <input v-model="newSetting.friendly_name" placeholder="Przyjazna nazwa" />
       <input v-model="newSetting.value" placeholder="Wartość" />
-      <button type="submit">Dodaj</button>
+      <button type="submit">Nowy</button>
     </form>
 
     <p v-if="statusMessage" class="hint">{{ statusMessage }}</p>
@@ -127,8 +128,8 @@ const prevPage = () => {
           <span class="muted">{{ item.value }}</span>
         </div>
         <div class="row-actions">
-          <button class="ghost" @click="startEdit(item)">Edytuj</button>
-          <button class="ghost danger" @click="removeItem(item.id)">Usuń</button>
+          <button class="ghost" @click="startEdit(item)">🖉</button>
+          <button class="ghost danger" @click="removeItem(item.id)">🗑️</button>
         </div>
         <div v-if="editSetting.id === item.id" class="inline-edit">
           <h4>Edytuj ustawienie</h4>

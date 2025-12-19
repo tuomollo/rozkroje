@@ -75,6 +75,7 @@ const updateItem = async () => {
 }
 
 const removeProject = async (projectId) => {
+  if (!window.confirm('Czy jesteś pewien, że chcesz usunąć ten element?')) return
   statusMessage.value = ''
   try {
     await deleteProject(projectId)
@@ -116,7 +117,7 @@ ensureClients()
       <div class="actions">
         <input v-model="search" placeholder="Szukaj po projekcie lub kliencie..." />
         <button v-if="state.user?.is_admin" class="ghost" @click="showCreate = !showCreate">
-          {{ showCreate ? 'Schowaj' : 'Nowy' }}
+          {{ showCreate ? 'Schowaj' : '➕' }}
         </button>
       </div>
     </div>
@@ -128,7 +129,7 @@ ensureClients()
           {{ client.first_name }} {{ client.last_name }}
         </option>
       </select>
-      <button type="submit">Dodaj</button>
+      <button type="submit">Nowy</button>
     </form>
     <p v-if="statusMessage" class="hint">{{ statusMessage }}</p>
     <div class="list">
@@ -138,8 +139,8 @@ ensureClients()
           <span class="muted">{{ clientLabel(project) }}</span>
         </div>
         <div class="row-actions">
-          <button v-if="state.user?.is_admin" class="ghost" @click="startEdit(project)">Edytuj</button>
-          <button v-if="state.user?.is_admin" class="ghost danger" @click="removeProject(project.id)">Usuń</button>
+          <button v-if="state.user?.is_admin" class="ghost" @click="startEdit(project)">🖉</button>
+          <button v-if="state.user?.is_admin" class="ghost danger" @click="removeProject(project.id)">🗑️</button>
         </div>
         <div v-if="state.user?.is_admin && editProjectForm.id === project.id" class="inline-edit">
           <h4>Edytuj projekt</h4>

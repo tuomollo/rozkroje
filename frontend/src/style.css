@@ -156,6 +156,22 @@ h1 {
   color: #cbd5e1;
 }
 
+.icon-button {
+  background: transparent;
+  border: none;
+  padding: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #e2e8f0;
+  font-size: 22px;
+  line-height: 1;
+}
+.icon-button:hover {
+  transform: scale(1.05);
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
