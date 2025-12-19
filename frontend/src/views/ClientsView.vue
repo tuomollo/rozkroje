@@ -103,11 +103,13 @@ const prevPage = () => {
       </div>
       <div class="actions">
         <input v-model="search" placeholder="Szukaj po imieniu, nazwisku, emailu..." />
-        <button class="ghost" @click="showCreate = !showCreate">{{ showCreate ? 'Schowaj' : 'Nowy' }}</button>
+        <button v-if="state.user?.is_admin" class="ghost" @click="showCreate = !showCreate">
+          {{ showCreate ? 'Schowaj' : 'Nowy' }}
+        </button>
       </div>
     </div>
 
-    <form v-if="showCreate" class="form-grid" @submit.prevent="submitNew">
+    <form v-if="showCreate && state.user?.is_admin" class="form-grid" @submit.prevent="submitNew">
       <input v-model="newClient.first_name" placeholder="Imię" required />
       <input v-model="newClient.last_name" placeholder="Nazwisko" required />
       <input v-model="newClient.email" type="email" placeholder="Email (opcjonalnie)" />
@@ -125,10 +127,10 @@ const prevPage = () => {
           <span class="muted">{{ client.phone || 'brak telefonu' }}</span>
         </div>
         <div class="row-actions">
-          <button class="ghost" @click="startEdit(client)">Edytuj</button>
-          <button class="ghost danger" @click="removeItem(client.id)">Usuń</button>
+          <button v-if="state.user?.is_admin" class="ghost" @click="startEdit(client)">Edytuj</button>
+          <button v-if="state.user?.is_admin" class="ghost danger" @click="removeItem(client.id)">Usuń</button>
         </div>
-        <div v-if="editClient.id === client.id" class="inline-edit">
+        <div v-if="state.user?.is_admin && editClient.id === client.id" class="inline-edit">
           <h4>Edytuj klienta</h4>
           <div class="inline-fields">
             <div class="inline-field">

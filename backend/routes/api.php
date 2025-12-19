@@ -18,9 +18,11 @@ Route::prefix('auth')->group(function () {
 
 Route::middleware('auth:api')->group(function () {
     Route::get('/projects', [ProjectController::class, 'index']);
-    Route::post('/projects', [ProjectController::class, 'store']);
-    Route::put('/projects/{project}', [ProjectController::class, 'update']);
-    Route::delete('/projects/{project}', [ProjectController::class, 'destroy']);
+    Route::middleware('auth.admin')->group(function () {
+        Route::post('/projects', [ProjectController::class, 'store']);
+        Route::put('/projects/{project}', [ProjectController::class, 'update']);
+        Route::delete('/projects/{project}', [ProjectController::class, 'destroy']);
+    });
 
     Route::get('/materials', [MaterialController::class, 'index']);
     Route::post('/materials', [MaterialController::class, 'store']);
@@ -28,15 +30,15 @@ Route::middleware('auth:api')->group(function () {
     Route::delete('/materials/{material}', [MaterialController::class, 'destroy']);
 
     Route::get('/clients', [ClientController::class, 'index']);
-    Route::post('/clients', [ClientController::class, 'store']);
-    Route::put('/clients/{client}', [ClientController::class, 'update']);
-    Route::delete('/clients/{client}', [ClientController::class, 'destroy']);
-
     Route::get('/material-types', [MaterialTypeController::class, 'index']);
+    Route::post('/material-types', [MaterialTypeController::class, 'store']);
+    Route::put('/material-types/{materialType}', [MaterialTypeController::class, 'update']);
+    Route::delete('/material-types/{materialType}', [MaterialTypeController::class, 'destroy']);
+
     Route::middleware('auth.admin')->group(function () {
-        Route::post('/material-types', [MaterialTypeController::class, 'store']);
-        Route::put('/material-types/{materialType}', [MaterialTypeController::class, 'update']);
-        Route::delete('/material-types/{materialType}', [MaterialTypeController::class, 'destroy']);
+        Route::post('/clients', [ClientController::class, 'store']);
+        Route::put('/clients/{client}', [ClientController::class, 'update']);
+        Route::delete('/clients/{client}', [ClientController::class, 'destroy']);
 
         Route::get('/users', [UserManagementController::class, 'index']);
         Route::post('/users', [UserManagementController::class, 'store']);

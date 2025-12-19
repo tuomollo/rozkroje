@@ -98,11 +98,11 @@ ensureClients()
         <p class="eyebrow">Projekty</p>
         <h3>Zarządzaj</h3>
       </div>
-      <button class="ghost" @click="showCreate = !showCreate">
+      <button v-if="state.user?.is_admin" class="ghost" @click="showCreate = !showCreate">
         {{ showCreate ? 'Schowaj' : 'Nowy' }}
       </button>
     </div>
-    <form v-if="showCreate" class="form-grid" @submit.prevent="createItem">
+    <form v-if="showCreate && state.user?.is_admin" class="form-grid" @submit.prevent="createItem">
       <input v-model="newProject.name" placeholder="Nazwa projektu" required />
       <select v-model.number="newProject.client_id" required>
         <option :value="null" disabled>Wybierz klienta</option>
@@ -120,10 +120,10 @@ ensureClients()
           <span class="muted">{{ clientLabel(project) }}</span>
         </div>
         <div class="row-actions">
-          <button class="ghost" @click="startEdit(project)">Edytuj</button>
-          <button class="ghost danger" @click="removeProject(project.id)">Usuń</button>
+          <button v-if="state.user?.is_admin" class="ghost" @click="startEdit(project)">Edytuj</button>
+          <button v-if="state.user?.is_admin" class="ghost danger" @click="removeProject(project.id)">Usuń</button>
         </div>
-        <div v-if="editProjectForm.id === project.id" class="inline-edit">
+        <div v-if="state.user?.is_admin && editProjectForm.id === project.id" class="inline-edit">
           <h4>Edytuj projekt</h4>
           <div class="inline-fields">
             <div class="inline-field">
