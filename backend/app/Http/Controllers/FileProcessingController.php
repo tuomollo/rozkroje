@@ -90,20 +90,22 @@ class FileProcessingController extends Controller
             );
         });
 
-        $result = $this->processSpreadsheet($session, $project);
+        $sourceSpreadsheet = IOFactory::load(Storage::path($session->file_path));
+        $remarks = $this->addRemarks($sourceSpreadsheet);
+        $author = optional($request->user())->name ?? 'Nieznany';
+
+        $result = $this->processSpreadsheet($session, $project, $remarks, $author);
 
         $session->update([
             'result_path' => $result['zip_path'],
             'status' => 'processed',
         ]);
 
-        $spreadsheet = IOFactory::load(Storage::path($session->file_path));
-
         return response()->json([
             'download_url' => url('/api/downloads/' . $session->token),
             'files' => $result['files'],
             'file_urls' => $result['file_urls'],
-            'remarks' => $this->addRemarks($spreadsheet)
+            'remarks' => $remarks
         ]);
     }
 
@@ -224,7 +226,7 @@ class FileProcessingController extends Controller
     /**
      * @return array{zip_path: string, files: array<int, string>}
      */
-    private function processSpreadsheet(UploadSession $session, Project $project): array
+    private function processSpreadsheet(UploadSession $session, Project $project, array $remarks = [], string $author = ''): array
     {
         $path = Storage::path($session->file_path);
         $spreadsheet = IOFactory::load($path);
@@ -269,6 +271,7 @@ class FileProcessingController extends Controller
         $exportDir = "exports/{$session->token}";
         Storage::makeDirectory($exportDir);
         $files = [];
+        $summaryFilePath = $exportDir . '/podsumowanie.txt';
 
         foreach ($rowsByType as $typeId => $payload) {
             /** @var MaterialType $type */
@@ -365,13 +368,34 @@ class FileProcessingController extends Controller
                 $rowIndex++;
             }
 
-            $fileName = Str::slug($type->name) . '.xlsx';
+            $fileName = Str::slug($clientName.'-'.$project->name.'-'.$type->name) . '.xlsx';
             $fullPath = Storage::path($exportDir . '/' . $fileName);
             $writer = IOFactory::createWriter($resultSheet, 'Xlsx');
             $writer->save($fullPath);
 
             $files[] = $fullPath;
         }
+
+        $summaryLines = [
+            'Nazwa klienta: ' . ($project->client?->full_name ?? ''),
+            'Nazwa projektu: ' . $project->name,
+            'Nazwa pliku źródłowego: ' . ($session->original_name ?? basename($session->file_path)),
+            'Data generacji pliku: ' . now()->toDateTimeString(),
+            'Autor: ' . $author,
+            '',
+            'Uwagi:',
+        ];
+
+        if (!empty($remarks)) {
+            foreach ($remarks as $remark) {
+                $summaryLines[] = '- ' . $remark;
+            }
+        } else {
+            $summaryLines[] = '- Brak uwag';
+        }
+
+        Storage::put($summaryFilePath, implode(PHP_EOL, $summaryLines));
+        $files[] = Storage::path($summaryFilePath);
 
         $zipPath = "public/downloads/{$session->token}.zip";
         Storage::makeDirectory('public/downloads');
