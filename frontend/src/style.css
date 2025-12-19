@@ -108,6 +108,10 @@ h1 {
   border-color: rgba(125, 252, 142, 0.6);
 }
 
+.side-nav a::first-letter {
+  font-size: 1.3em;
+}
+
 .lede {
   margin: 8px 0 0;
   max-width: 720px;
