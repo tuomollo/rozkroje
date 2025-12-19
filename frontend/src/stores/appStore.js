@@ -20,7 +20,11 @@ const resetData = () => {
 
 export const restoreSession = async () => {
   const token = localStorage.getItem('auth_token')
-  if (!token) return
+  if (!token) {
+    state.user = null
+    resetData()
+    return
+  }
   try {
     const { data } = await api.get('/auth/me')
     state.user = data

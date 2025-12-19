@@ -49,6 +49,12 @@ class FileProcessingController extends Controller
             'upload_token' => $token,
             'unknown_materials' => $unknownMaterials,
             'material_types' => MaterialType::orderBy('name')->get(),
+             // TODO: zrobić uwagi - sprawdzanie oklejania, długości itp.
+            'remarks' => [
+                'Przykładowa uwaga 1',
+                'Przykładowa uwaga 2',
+                'Przykładowa uwaga 3',
+            ],
         ]);
     }
 

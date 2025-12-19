@@ -28,20 +28,20 @@ router.beforeEach(async (to, from, next) => {
     return next({ name: 'upload' })
   }
 
-  if (to.meta.requiresAuth && !state.user) {
+  if (to.meta.requiresAuth) {
     try {
       await restoreSession()
     } catch (e) {
-      // ignore, fallback to redirect
+      return next({ name: 'login' })
     }
-  }
 
-  if (to.meta.requiresAuth && !state.user) {
-    return next({ name: 'login' })
-  }
+    if (!state.user) {
+      return next({ name: 'login' })
+    }
 
-  if (to.meta.adminOnly && !state.user?.is_admin) {
-    return next({ name: 'upload' })
+    if (to.meta.adminOnly && !state.user?.is_admin) {
+      return next({ name: 'upload' })
+    }
   }
 
   next()

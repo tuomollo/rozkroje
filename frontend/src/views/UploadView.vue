@@ -12,6 +12,7 @@ const downloadUrl = ref('')
 const fileLinks = ref([])
 const statusMessage = ref('')
 const loading = ref(false)
+const remarks = ref([])
 
 const resetUploadState = () => {
   uploadToken.value = ''
@@ -19,6 +20,7 @@ const resetUploadState = () => {
   Object.keys(materialAssignments).forEach((key) => delete materialAssignments[key])
   downloadUrl.value = ''
   fileLinks.value = []
+  remarks.value = []
   statusMessage.value = ''
 }
 
@@ -41,6 +43,7 @@ const inspectUpload = async () => {
     })
     uploadToken.value = data.upload_token
     unknownMaterials.value = data.unknown_materials
+    remarks.value = data.remarks ?? []
     data.unknown_materials.forEach((item) => {
       materialAssignments[item] = data.material_types[0]?.id ?? null
     })
@@ -80,6 +83,7 @@ const processUpload = async () => {
     })
     downloadUrl.value = data.download_url
     fileLinks.value = data.file_urls ?? []
+    remarks.value = data.remarks ?? remarks.value
     statusMessage.value = 'Pliki wygenerowane. Poniżej znajdziesz link do ZIP.'
   } catch (error) {
     statusMessage.value = error.response?.data?.message ?? 'Generowanie nie powiodło się.'
@@ -143,6 +147,12 @@ watch(
         <p v-if="downloadUrl" class="success">
           Pliki gotowe: <a :href="downloadUrl" target="_blank" rel="noopener">pobierz ZIP</a>
         </p>
+        <div v-if="remarks.length" class="remarks">
+          <p>Uwagi:</p>
+          <ul>
+            <li v-for="note in remarks" :key="note">{{ note }}</li>
+          </ul>
+        </div>
         <div v-if="fileLinks.length" class="file-links">
           <p>Arkusze per materiał:</p>
           <ul>

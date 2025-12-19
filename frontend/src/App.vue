@@ -1,16 +1,20 @@
 <script setup>
 import { onMounted } from 'vue'
-import { RouterLink, RouterView, useRoute } from 'vue-router'
+import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 import { isAdmin, logout, restoreSession, state } from './stores/appStore'
 
 const route = useRoute()
+const router = useRouter()
 
 onMounted(() => {
   restoreSession().catch(() => {})
 })
 
 const isActive = (name) => route.name === name
-const handleLogout = () => logout()
+const handleLogout = () => {
+  logout()
+  router.push({ name: 'login' })
+}
 </script>
 
 <template>
@@ -32,12 +36,12 @@ const handleLogout = () => logout()
     <div class="shell-body" :class="{ 'with-sidebar': state.user }">
       <aside class="sidebar" v-if="state.user">
         <nav class="side-nav">
-          <RouterLink :class="{ active: isActive('upload') }" to="/upload">Generowanie</RouterLink>
-          <RouterLink :class="{ active: isActive('projects') }" to="/projects">Projekty</RouterLink>
+          <RouterLink :class="{ active: isActive('upload') }" to="/upload">📃 Generowanie</RouterLink>
+          <RouterLink :class="{ active: isActive('projects') }" to="/projects">📕 Projekty</RouterLink>
           <RouterLink v-if="isAdmin" :class="{ active: isActive('material-types') }" to="/material-types">
-            Typy materiałów
+            ⚙ Typy materiałów
           </RouterLink>
-          <RouterLink v-if="isAdmin" :class="{ active: isActive('users') }" to="/users">Użytkownicy</RouterLink>
+          <RouterLink v-if="isAdmin" :class="{ active: isActive('users') }" to="/users">👫 Użytkownicy</RouterLink>
         </nav>
       </aside>
 
