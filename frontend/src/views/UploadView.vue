@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, reactive, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import api from '../services/api'
 import { loadMaterialTypes, loadProjects, state } from '../stores/appStore'
 
@@ -15,6 +15,7 @@ const statusMessage = ref('')
 const loading = ref(false)
 const remarks = ref([])
 const showUnknownList = ref(false)
+const projectSearch = ref('')
 
 const resetUploadState = () => {
   uploadToken.value = ''
@@ -119,6 +120,16 @@ watch(
   },
   { deep: false },
 )
+
+const filteredProjects = computed(() => {
+  const term = projectSearch.value.toLowerCase()
+  if (!term) return state.projects
+  return state.projects.filter((project) => {
+    const name = project.name?.toLowerCase() ?? ''
+    const client = project.client?.full_name?.toLowerCase() ?? ''
+    return name.includes(term) || client.includes(term)
+  })
+})
 </script>
 
 <template>
@@ -134,9 +145,10 @@ watch(
       <div class="stack">
         <label>
           <span>Projekt</span>
+          <input v-model="projectSearch" placeholder="Filtruj po nazwie lub kliencie" />
           <select v-model.number="selectedProjectId">
             <option :value="null" disabled>Wybierz projekt</option>
-            <option v-for="project in state.projects" :key="project.id" :value="project.id">
+            <option v-for="project in filteredProjects" :key="project.id" :value="project.id">
               {{ project.client?.full_name || 'Brak klienta' }} — {{ project.name }}
             </option>
           </select>
