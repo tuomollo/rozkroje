@@ -7,6 +7,7 @@ import MaterialTypesView from './views/MaterialTypesView.vue'
 import UsersView from './views/UsersView.vue'
 import SettingsView from './views/SettingsView.vue'
 import MaterialsView from './views/MaterialsView.vue'
+import ClientsView from './views/ClientsView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -24,6 +25,7 @@ const router = createRouter({
     { path: '/users', name: 'users', component: UsersView, meta: { requiresAuth: true, adminOnly: true } },
     { path: '/settings', name: 'settings', component: SettingsView, meta: { requiresAuth: true, adminOnly: true } },
     { path: '/materials', name: 'materials', component: MaterialsView, meta: { requiresAuth: true } },
+    { path: '/clients', name: 'clients', component: ClientsView, meta: { requiresAuth: true } },
   ],
 })
 

@@ -302,10 +302,27 @@ button:hover:not(:disabled) {
 
 .inline-edit {
   margin-top: 12px;
-  padding: 12px;
+  padding: 16px;
   border-radius: 3px;
   background: rgba(125, 211, 252, 0.06);
   border: 1px dashed rgba(125, 211, 252, 0.4);
+}
+
+.inline-edit .inline-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.inline-edit .inline-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.inline-edit .actions {
+  grid-column: 1 / -1;
 }
 
 .split {

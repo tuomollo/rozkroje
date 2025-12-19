@@ -63,6 +63,10 @@ const removeItem = async (typeId) => {
     </div>
     <form v-if="showCreate" class="form-grid" @submit.prevent="createItem">
       <input v-model="newMaterialType.name" placeholder="Nazwa typu" required />
+      <label class="checkbox">
+        <input type="checkbox" v-model="newMaterialType.has_grain" />
+        <span>Ma usłojenie</span>
+      </label>
       <button type="submit">Dodaj</button>
     </form>
     <p v-if="statusMessage" class="hint">{{ statusMessage }}</p>
@@ -75,14 +79,26 @@ const removeItem = async (typeId) => {
           <button class="ghost" @click="startEdit(type)">Edytuj</button>
           <button class="ghost danger" @click="removeItem(type.id)">Usuń</button>
         </div>
-      </div>
-    </div>
-    <div v-if="editMaterialType.id" class="inline-edit">
-      <h4>Edytuj typ</h4>
-      <input v-model="editMaterialType.name" placeholder="Nazwa" />
-      <div class="actions">
-        <button @click="updateItem">Zapisz</button>
-        <button class="ghost" @click="editMaterialType.id = null">Anuluj</button>
+        <div v-if="editMaterialType.id === type.id" class="inline-edit">
+          <h4>Edytuj typ</h4>
+          <div class="inline-fields">
+            <div class="inline-field">
+              <label>Nazwa
+                <input v-model="editMaterialType.name" placeholder="Nazwa" />
+              </label>
+            </div>
+            <div class="inline-field">
+              <label class="checkbox">
+                <input type="checkbox" v-model="editMaterialType.has_grain" />
+                <span>Ma usłojenie</span>
+              </label>
+            </div>
+            <div class="actions">
+              <button @click="updateItem">Zapisz</button>
+              <button class="ghost" @click="editMaterialType.id = null">Anuluj</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>

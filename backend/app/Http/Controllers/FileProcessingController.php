@@ -27,7 +27,7 @@ class FileProcessingController extends Controller
             'file' => 'required|file',
         ]);
 
-        $project = Project::findOrFail($validated['project_id']);
+        $project = Project::with('client')->findOrFail($validated['project_id']);
         $file = $validated['file'];
         $token = (string) Str::uuid();
         $dir = "uploads/{$token}";
@@ -66,7 +66,7 @@ class FileProcessingController extends Controller
         ]);
 
         $session = UploadSession::where('token', $validated['upload_token'])->firstOrFail();
-        $project = Project::findOrFail($validated['project_id']);
+        $project = Project::with('client')->findOrFail($validated['project_id']);
 
         if (!Storage::exists($session->file_path)) {
             return response()->json(['message' => 'Uploaded file not found. Please start over.'], 404);
@@ -277,7 +277,8 @@ class FileProcessingController extends Controller
 
             $resultSheet = new Spreadsheet();
             $active = $resultSheet->getActiveSheet();
-            $active->setCellValue('A1', 'Klient: ' . $project->client_name);
+            $clientName = $project->client?->full_name ?? '';
+            $active->setCellValue('A1', 'Klient: ' . $clientName);
             $active->setCellValue('B1', 'Projekt: ' . $project->name);
 
             $styleArray = [

@@ -11,13 +11,18 @@ class Project extends Model
 
     protected $fillable = [
         'name',
-        'client_name',
+        'client_id',
         'created_by',
     ];
 
     public function owner()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function client()
+    {
+        return $this->belongsTo(Client::class);
     }
 
     public function uploadSessions()

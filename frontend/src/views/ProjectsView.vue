@@ -1,9 +1,9 @@
 <script setup>
 import { computed, reactive, ref, watch } from 'vue'
-import { createProject, deleteProject, state, updateProject } from '../stores/appStore'
+import { createProject, deleteProject, loadClients, state, updateProject } from '../stores/appStore'
 
-const newProject = reactive({ name: '', client_name: '' })
-const editProjectForm = reactive({ id: null, name: '', client_name: '' })
+const newProject = reactive({ name: '', client_id: null })
+const editProjectForm = reactive({ id: null, name: '', client_id: null })
 const statusMessage = ref('')
 const showCreate = ref(false)
 const currentPage = ref(1)
@@ -25,12 +25,12 @@ watch(
 )
 
 const createItem = async () => {
-  if (!newProject.name || !newProject.client_name) return
+  if (!newProject.name || !newProject.client_id) return
   statusMessage.value = ''
   try {
     await createProject(newProject)
     newProject.name = ''
-    newProject.client_name = ''
+    newProject.client_id = null
     showCreate.value = false
     statusMessage.value = 'Projekt dodany.'
   } catch (error) {
@@ -41,7 +41,7 @@ const createItem = async () => {
 const startEdit = (project) => {
   editProjectForm.id = project.id
   editProjectForm.name = project.name
-  editProjectForm.client_name = project.client_name
+  editProjectForm.client_id = project.client_id
 }
 
 const updateItem = async () => {
@@ -50,7 +50,7 @@ const updateItem = async () => {
   try {
     await updateProject(editProjectForm.id, {
       name: editProjectForm.name,
-      client_name: editProjectForm.client_name,
+      client_id: editProjectForm.client_id,
     })
     statusMessage.value = 'Projekt zaktualizowany.'
     editProjectForm.id = null
@@ -79,6 +79,16 @@ const nextPage = () => {
 const prevPage = () => {
   if (currentPage.value > 1) currentPage.value -= 1
 }
+
+const clientLabel = (project) => project.client?.full_name || 'Brak klienta'
+
+const ensureClients = async () => {
+  if (!state.clients.length) {
+    await loadClients()
+  }
+}
+
+ensureClients()
 </script>
 
 <template>
@@ -94,7 +104,12 @@ const prevPage = () => {
     </div>
     <form v-if="showCreate" class="form-grid" @submit.prevent="createItem">
       <input v-model="newProject.name" placeholder="Nazwa projektu" required />
-      <input v-model="newProject.client_name" placeholder="Nazwa klienta" required />
+      <select v-model.number="newProject.client_id" required>
+        <option :value="null" disabled>Wybierz klienta</option>
+        <option v-for="client in state.clients" :key="client.id" :value="client.id">
+          {{ client.first_name }} {{ client.last_name }}
+        </option>
+      </select>
       <button type="submit">Dodaj</button>
     </form>
     <p v-if="statusMessage" class="hint">{{ statusMessage }}</p>
@@ -102,11 +117,34 @@ const prevPage = () => {
       <div v-for="project in paginatedProjects" :key="project.id" class="row">
         <div class="row-main">
           <strong>{{ project.name }}</strong>
-          <span class="muted">{{ project.client_name }}</span>
+          <span class="muted">{{ clientLabel(project) }}</span>
         </div>
         <div class="row-actions">
           <button class="ghost" @click="startEdit(project)">Edytuj</button>
           <button class="ghost danger" @click="removeProject(project.id)">Usuń</button>
+        </div>
+        <div v-if="editProjectForm.id === project.id" class="inline-edit">
+          <h4>Edytuj projekt</h4>
+          <div class="inline-fields">
+            <div class="inline-field">
+              <label>Nazwa
+                <input v-model="editProjectForm.name" placeholder="Nazwa" />
+              </label>
+            </div>
+            <div class="inline-field">
+              <label>Klient
+                <select v-model.number="editProjectForm.client_id">
+                  <option v-for="client in state.clients" :key="client.id" :value="client.id">
+                    {{ client.first_name }} {{ client.last_name }}
+                  </option>
+                </select>
+              </label>
+            </div>
+            <div class="actions">
+              <button @click="updateItem">Zapisz</button>
+              <button class="ghost" @click="editProjectForm.id = null">Anuluj</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -114,15 +152,6 @@ const prevPage = () => {
       <button class="ghost" @click="prevPage" :disabled="currentPage === 1">Poprzednia</button>
       <span>Strona {{ currentPage }} / {{ totalPages }}</span>
       <button class="ghost" @click="nextPage" :disabled="currentPage === totalPages">Następna</button>
-    </div>
-    <div v-if="editProjectForm.id" class="inline-edit">
-      <h4>Edytuj projekt</h4>
-      <input v-model="editProjectForm.name" placeholder="Nazwa" />
-      <input v-model="editProjectForm.client_name" placeholder="Klient" />
-      <div class="actions">
-        <button @click="updateItem">Zapisz</button>
-        <button class="ghost" @click="editProjectForm.id = null">Anuluj</button>
-      </div>
     </div>
   </section>
 </template>

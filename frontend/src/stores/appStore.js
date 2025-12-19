@@ -7,6 +7,7 @@ export const state = reactive({
   authError: '',
   projects: [],
   materialTypes: [],
+  clients: [],
   users: [],
   settings: [],
   materials: [],
@@ -18,6 +19,7 @@ export const isAdmin = computed(() => !!state.user?.is_admin)
 const resetData = () => {
   state.projects = []
   state.materialTypes = []
+  state.clients = []
   state.users = []
   state.settings = []
 }
@@ -64,7 +66,7 @@ export const logout = () => {
 }
 
 export const bootstrapData = async () => {
-  await Promise.all([loadProjects(), loadMaterialTypes()])
+  await Promise.all([loadProjects(), loadMaterialTypes(), loadClients()])
   if (isAdmin.value) {
     await loadUsers()
   }
@@ -96,6 +98,11 @@ export const deleteProject = async (projectId) => {
 export const loadMaterialTypes = async () => {
   const { data } = await api.get('/material-types')
   state.materialTypes = data
+}
+
+export const loadClients = async () => {
+  const { data } = await api.get('/clients')
+  state.clients = data
 }
 
 export const createMaterialType = async (payload) => {
@@ -137,6 +144,26 @@ export const updateUser = async (userId, payload) => {
 export const deleteUser = async (userId) => {
   await api.delete(`/users/${userId}`)
   state.users = state.users.filter((u) => u.id !== userId)
+}
+
+export const createClient = async (payload) => {
+  const { data } = await api.post('/clients', payload)
+  state.clients.push(data)
+  state.clients.sort((a, b) => a.last_name.localeCompare(b.last_name))
+  return data
+}
+
+export const updateClient = async (id, payload) => {
+  const { data } = await api.put(`/clients/${id}`, payload)
+  const index = state.clients.findIndex((c) => c.id === id)
+  if (index !== -1) state.clients[index] = data
+  state.clients.sort((a, b) => a.last_name.localeCompare(b.last_name))
+  return data
+}
+
+export const deleteClient = async (id) => {
+  await api.delete(`/clients/${id}`)
+  state.clients = state.clients.filter((c) => c.id !== id)
 }
 
 export const loadSettings = async () => {

@@ -95,20 +95,36 @@ const removeItem = async (id) => {
           <button class="ghost" @click="startEdit(item)">Edytuj</button>
           <button class="ghost danger" @click="removeItem(item.id)">Usuń</button>
         </div>
-      </div>
-    </div>
-    <div v-if="editUserForm.id" class="inline-edit">
-      <h4>Edytuj użytkownika</h4>
-      <input v-model="editUserForm.name" placeholder="Imię i nazwisko" />
-      <input v-model="editUserForm.email" type="email" placeholder="Email" />
-      <input v-model="editUserForm.password" type="password" placeholder="Nowe hasło (opcjonalnie)" />
-      <label class="checkbox">
-        <input type="checkbox" v-model="editUserForm.is_admin" />
-        <span>Administrator</span>
-      </label>
-      <div class="actions">
-        <button @click="updateItem">Zapisz</button>
-        <button class="ghost" @click="editUserForm.id = null">Anuluj</button>
+        <div v-if="editUserForm.id === item.id" class="inline-edit">
+          <h4>Edytuj użytkownika</h4>
+          <div class="inline-fields">
+            <div class="inline-field">
+              <label>Imię i nazwisko
+                <input v-model="editUserForm.name" placeholder="Imię i nazwisko" />
+              </label>
+            </div>
+            <div class="inline-field">
+              <label>Email
+                <input v-model="editUserForm.email" type="email" placeholder="Email" />
+              </label>
+            </div>
+            <div class="inline-field">
+              <label>Nowe hasło
+                <input v-model="editUserForm.password" type="password" placeholder="Nowe hasło (opcjonalnie)" />
+              </label>
+            </div>
+            <div class="inline-field">
+              <label class="checkbox">
+                <input type="checkbox" v-model="editUserForm.is_admin" />
+                <span>Administrator</span>
+              </label>
+            </div>
+            <div class="actions">
+              <button @click="updateItem">Zapisz</button>
+              <button class="ghost" @click="editUserForm.id = null">Anuluj</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>

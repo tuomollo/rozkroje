@@ -137,7 +137,7 @@ watch(
           <select v-model.number="selectedProjectId">
             <option :value="null" disabled>Wybierz projekt</option>
             <option v-for="project in state.projects" :key="project.id" :value="project.id">
-              {{ project.client_name }} — {{ project.name }}
+              {{ project.client?.full_name || 'Brak klienta' }} — {{ project.name }}
             </option>
           </select>
         </label>

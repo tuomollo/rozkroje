@@ -140,6 +140,33 @@ const prevPage = () => {
           <button class="ghost" @click="startEdit(item)">Edytuj</button>
           <button class="ghost danger" @click="removeItem(item.id)">Usuń</button>
         </div>
+        <div v-if="editMaterial.id === item.id" class="inline-edit">
+          <h4>Edytuj materiał</h4>
+          <div class="inline-fields">
+            <div class="inline-field">
+              <label>Nazwa
+                <input v-model="editMaterial.name" placeholder="Nazwa" />
+              </label>
+            </div>
+            <div class="inline-field">
+              <label>Typ
+                <select v-model.number="editMaterial.material_type_id">
+                  <option v-for="type in state.materialTypes" :key="type.id" :value="type.id">{{ type.name }}</option>
+                </select>
+              </label>
+            </div>
+            <div class="inline-field">
+              <label class="checkbox">
+                <input type="checkbox" v-model="editMaterial.has_grain" />
+                <span>Ma usłojenie</span>
+              </label>
+            </div>
+            <div class="actions">
+              <button @click="submitEdit">Zapisz</button>
+              <button class="ghost" @click="editMaterial.id = null">Anuluj</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -151,20 +178,5 @@ const prevPage = () => {
       </button>
     </div>
 
-    <div v-if="editMaterial.id" class="inline-edit">
-      <h4>Edytuj materiał</h4>
-      <input v-model="editMaterial.name" placeholder="Nazwa" />
-      <select v-model.number="editMaterial.material_type_id">
-        <option v-for="type in state.materialTypes" :key="type.id" :value="type.id">{{ type.name }}</option>
-      </select>
-      <label class="checkbox">
-        <input type="checkbox" v-model="editMaterial.has_grain" />
-        <span>Ma usłojenie</span>
-      </label>
-      <div class="actions">
-        <button @click="submitEdit">Zapisz</button>
-        <button class="ghost" @click="editMaterial.id = null">Anuluj</button>
-      </div>
-    </div>
   </section>
 </template>

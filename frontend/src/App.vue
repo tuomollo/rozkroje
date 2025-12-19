@@ -42,6 +42,7 @@ const handleLogout = () => {
             ⚙ Typy materiałów
           </RouterLink>
           <RouterLink :class="{ active: isActive('materials') }" to="/materials">🗍 Materiały</RouterLink>
+          <RouterLink :class="{ active: isActive('clients') }" to="/clients">🙋 Klienci</RouterLink>
           <RouterLink v-if="isAdmin" :class="{ active: isActive('users') }" to="/users">👫 Użytkownicy</RouterLink>
           <RouterLink v-if="isAdmin" :class="{ active: isActive('settings') }" to="/settings">🛠 Ustawienia</RouterLink>
 

@@ -130,6 +130,30 @@ const prevPage = () => {
           <button class="ghost" @click="startEdit(item)">Edytuj</button>
           <button class="ghost danger" @click="removeItem(item.id)">Usuń</button>
         </div>
+        <div v-if="editSetting.id === item.id" class="inline-edit">
+          <h4>Edytuj ustawienie</h4>
+          <div class="inline-fields">
+            <div class="inline-field">
+              <label>Klucz
+                <input v-model="editSetting.key" placeholder="Klucz" />
+              </label>
+            </div>
+            <div class="inline-field">
+              <label>Przyjazna nazwa
+                <input v-model="editSetting.friendly_name" placeholder="Przyjazna nazwa" />
+              </label>
+            </div>
+            <div class="inline-field">
+              <label>Wartość
+                <input v-model="editSetting.value" placeholder="Wartość" />
+              </label>
+            </div>
+            <div class="actions">
+              <button @click="updateItem">Zapisz</button>
+              <button class="ghost" @click="editSetting.id = null">Anuluj</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -139,15 +163,5 @@ const prevPage = () => {
       <button class="ghost" @click="nextPage" :disabled="currentPage === totalPages">Następna</button>
     </div>
 
-    <div v-if="editSetting.id" class="inline-edit">
-      <h4>Edytuj ustawienie</h4>
-      <input v-model="editSetting.key" placeholder="Klucz" />
-      <input v-model="editSetting.friendly_name" placeholder="Przyjazna nazwa" />
-      <input v-model="editSetting.value" placeholder="Wartość" />
-      <div class="actions">
-        <button @click="updateItem">Zapisz</button>
-        <button class="ghost" @click="editSetting.id = null">Anuluj</button>
-      </div>
-    </div>
   </section>
 </template>
