@@ -143,7 +143,7 @@ const prevPage = () => {
       </div>
     </div>
 
-    <div class="pagination" v-if="state.materialsMeta.total > state.materialsMeta.per_page">
+    <div class="pagination" >
       <button class="ghost" @click="prevPage" :disabled="state.materialsMeta.current_page === 1">Poprzednia</button>
       <span>Strona {{ state.materialsMeta.current_page }} / {{ state.materialsMeta.last_page }}</span>
       <button class="ghost" @click="nextPage" :disabled="state.materialsMeta.current_page === state.materialsMeta.last_page">

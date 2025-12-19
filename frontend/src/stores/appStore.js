@@ -169,8 +169,16 @@ export const loadMaterials = async (page = 1, search = '', perPage = 10) => {
     params: { page, search, per_page: perPage },
   })
   state.materials = data.data ?? data
+
   if (data.meta) {
     state.materialsMeta = data.meta
+  } else if (data.current_page !== undefined) {
+    state.materialsMeta = {
+      current_page: Number(data.current_page),
+      last_page: Number(data.last_page),
+      per_page: Number(data.per_page),
+      total: Number(data.total),
+    }
   } else {
     state.materialsMeta = {
       current_page: 1,
