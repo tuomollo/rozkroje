@@ -111,7 +111,7 @@ watch(
   <section class="card card-wide">
     <div class="card-head">
       <div>
-        <p class="eyebrow">Analiza pliku</p>
+        <p class="eyebrow">Generowanie</p>
         <h3>Upload i przypisanie materiałów</h3>
       </div>
       <!--div class="tag">{{ state.projects.length }} projektów</div-->

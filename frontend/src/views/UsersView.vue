@@ -5,6 +5,7 @@ import { createUser, deleteUser, state, updateUser } from '../stores/appStore'
 const newUser = reactive({ name: '', email: '', password: '', is_admin: false })
 const editUserForm = reactive({ id: null, name: '', email: '', password: '', is_admin: false })
 const statusMessage = ref('')
+const showCreate = ref(false)
 
 const createItem = async () => {
   if (!newUser.name || !newUser.email || !newUser.password) return
@@ -15,6 +16,7 @@ const createItem = async () => {
     newUser.email = ''
     newUser.password = ''
     newUser.is_admin = false
+    showCreate.value = false
     statusMessage.value = 'Użytkownik dodany.'
   } catch (error) {
     statusMessage.value = error.response?.data?.message ?? 'Nie udało się dodać użytkownika.'
@@ -65,8 +67,11 @@ const removeItem = async (id) => {
         <p class="eyebrow">Użytkownicy</p>
         <h3>Konta i uprawnienia</h3>
       </div>
+      <button class="ghost" @click="showCreate = !showCreate">
+        {{ showCreate ? 'Schowaj' : 'Nowy' }}
+      </button>
     </div>
-    <form class="form-grid" @submit.prevent="createItem">
+    <form v-if="showCreate" class="form-grid" @submit.prevent="createItem">
       <input v-model="newUser.name" placeholder="Imię i nazwisko" required />
       <input v-model="newUser.email" type="email" placeholder="Email" required />
       <input v-model="newUser.password" type="password" placeholder="Hasło" required />

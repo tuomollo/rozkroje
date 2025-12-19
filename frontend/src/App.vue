@@ -32,9 +32,9 @@ const handleLogout = () => logout()
     <div class="shell-body" :class="{ 'with-sidebar': state.user }">
       <aside class="sidebar" v-if="state.user">
         <nav class="side-nav">
-          <RouterLink :class="{ active: isActive('upload') }" to="/upload">Analiza pliku</RouterLink>
+          <RouterLink :class="{ active: isActive('upload') }" to="/upload">Generowanie</RouterLink>
           <RouterLink :class="{ active: isActive('projects') }" to="/projects">Projekty</RouterLink>
-          <RouterLink :class="{ active: isActive('material-types') }" to="/material-types">
+          <RouterLink v-if="isAdmin" :class="{ active: isActive('material-types') }" to="/material-types">
             Typy materiałów
           </RouterLink>
           <RouterLink v-if="isAdmin" :class="{ active: isActive('users') }" to="/users">Użytkownicy</RouterLink>

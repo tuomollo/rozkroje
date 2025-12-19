@@ -5,6 +5,7 @@ import { createMaterialType, deleteMaterialType, state, updateMaterialType } fro
 const newMaterialType = reactive({ name: '' })
 const editMaterialType = reactive({ id: null, name: '' })
 const statusMessage = ref('')
+const showCreate = ref(false)
 
 const createItem = async () => {
   if (!newMaterialType.name) return
@@ -12,6 +13,7 @@ const createItem = async () => {
   try {
     await createMaterialType({ name: newMaterialType.name })
     newMaterialType.name = ''
+    showCreate.value = false
     statusMessage.value = 'Typ dodany.'
   } catch (error) {
     statusMessage.value = error.response?.data?.message ?? 'Nie udało się dodać typu.'
@@ -53,8 +55,11 @@ const removeItem = async (typeId) => {
         <p class="eyebrow">Typy materiałów</p>
         <h3>Zarządzanie materiałami - uwaga, nie popsuć!</h3>
       </div>
+      <button class="ghost" @click="showCreate = !showCreate">
+        {{ showCreate ? 'Schowaj' : 'Nowy' }}
+      </button>
     </div>
-    <form class="form-grid" @submit.prevent="createItem">
+    <form v-if="showCreate" class="form-grid" @submit.prevent="createItem">
       <input v-model="newMaterialType.name" placeholder="Nazwa typu" required />
       <button type="submit">Dodaj</button>
     </form>

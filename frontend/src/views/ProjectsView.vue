@@ -5,6 +5,7 @@ import { createProject, deleteProject, state, updateProject } from '../stores/ap
 const newProject = reactive({ name: '', client_name: '' })
 const editProjectForm = reactive({ id: null, name: '', client_name: '' })
 const statusMessage = ref('')
+const showCreate = ref(false)
 const currentPage = ref(1)
 const pageSize = 10
 
@@ -30,6 +31,7 @@ const createItem = async () => {
     await createProject(newProject)
     newProject.name = ''
     newProject.client_name = ''
+    showCreate.value = false
     statusMessage.value = 'Projekt dodany.'
   } catch (error) {
     statusMessage.value = error.response?.data?.message ?? 'Nie udało się dodać projektu.'
@@ -86,8 +88,11 @@ const prevPage = () => {
         <p class="eyebrow">Projekty</p>
         <h3>Zarządzaj</h3>
       </div>
+      <button class="ghost" @click="showCreate = !showCreate">
+        {{ showCreate ? 'Schowaj' : 'Nowy' }}
+      </button>
     </div>
-    <form class="form-grid" @submit.prevent="createItem">
+    <form v-if="showCreate" class="form-grid" @submit.prevent="createItem">
       <input v-model="newProject.name" placeholder="Nazwa projektu" required />
       <input v-model="newProject.client_name" placeholder="Nazwa klienta" required />
       <button type="submit">Dodaj</button>
