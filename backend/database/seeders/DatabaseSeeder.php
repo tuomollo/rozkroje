@@ -33,7 +33,7 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        $types = ['Drewno', 'Stal', 'Aluminium', 'Kompozyt'];
+        $types = ['Płyta laminowana', 'Lakiery', 'Forniry'];
         foreach ($types as $typeName) {
             MaterialType::firstOrCreate(['name' => $typeName]);
         }

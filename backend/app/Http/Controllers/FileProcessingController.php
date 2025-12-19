@@ -13,7 +13,9 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use ZipArchive;
+use Illuminate\Support\Facades\Log;
 
 class FileProcessingController extends Controller
 {
@@ -104,6 +106,18 @@ class FileProcessingController extends Controller
         return response()->download(Storage::path($session->result_path));
     }
 
+    private function getMaterialColumnIndex($sheet) {
+        $lastColumnIndex = Coordinate::columnIndexFromString($sheet->getHighestDataColumn());
+        $materialColumnIndex = $lastColumnIndex;
+        for ($i=1; $i<=$lastColumnIndex; $i++) {
+            $value = $sheet->getCell([$i, 1]);
+            if (strToUpper($value) == 'MATERIAŁY') {
+                $materialColumnIndex = $i;
+                break;
+            }
+        }
+        return $materialColumnIndex;
+    }
     /**
      * @return array<int, string>
      */
@@ -113,15 +127,16 @@ class FileProcessingController extends Controller
         $sheet = $spreadsheet->getActiveSheet();
         $highestRow = $sheet->getHighestDataRow();
         $lastColumnIndex = Coordinate::columnIndexFromString($sheet->getHighestDataColumn());
+        $materialColumnIndex = $this->getMaterialColumnIndex($sheet);
 
         $names = [];
-        for ($row = 1; $row <= $highestRow; $row++) {
-            $value = trim((string) $sheet->getCellByColumnAndRow($lastColumnIndex, $row)->getCalculatedValue());
+        for ($row = 2; $row <= $highestRow; $row++) {
+            $value = trim((string) $sheet->getCell([$materialColumnIndex, $row])->getCalculatedValue());
+
             if ($value !== '') {
                 $names[] = $value;
             }
-        }
-
+        }        
         $names = array_values(array_unique($names));
         $existing = Material::whereIn('name', $names)->get()->map(fn ($item) => Str::lower($item->name))->all();
         $existingLookup = array_flip($existing);
@@ -141,6 +156,7 @@ class FileProcessingController extends Controller
         $sheet = $spreadsheet->getActiveSheet();
         $highestRow = $sheet->getHighestDataRow();
         $lastColumnIndex = Coordinate::columnIndexFromString($sheet->getHighestDataColumn());
+        $materialColumnIndex = $this->getMaterialColumnIndex($sheet);
 
         $materials = Material::with('type')->get();
         $materialLookup = [];
@@ -154,10 +170,10 @@ class FileProcessingController extends Controller
         for ($row = 1; $row <= $highestRow; $row++) {
             $rowData = [];
             for ($col = 1; $col <= $lastColumnIndex; $col++) {
-                $rowData[] = $sheet->getCellByColumnAndRow($col, $row)->getCalculatedValue();
+                $rowData[] = $sheet->getCell([$col, $row])->getCalculatedValue();
             }
 
-            $materialName = trim((string) $rowData[$lastColumnIndex - 1]);
+            $materialName = trim((string) $rowData[$materialColumnIndex - 1]);
             if ($materialName === '') {
                 continue;
             }
@@ -186,13 +202,39 @@ class FileProcessingController extends Controller
 
             $resultSheet = new Spreadsheet();
             $active = $resultSheet->getActiveSheet();
-            $active->setCellValue('A1', 'Client: ' . $project->client_name);
-            $active->setCellValue('B1', 'Project: ' . $project->name);
+            $active->setCellValue('A1', 'Klient: ' . $project->client_name);
+            $active->setCellValue('B1', 'Projekt: ' . $project->name);
+
+            $styleArray = [
+                'font' => [
+                    'bold' => true,
+                ],
+                'alignment' => [
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+                ],
+                'borders' => [
+                    'top' => [
+                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    ],
+                ],
+                'fill' => [
+                    'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_GRADIENT_LINEAR,
+                    'rotation' => 90,
+                    'startColor' => [
+                        'argb' => 'FFA0A0A0',
+                    ],
+                    'endColor' => [
+                        'argb' => 'FFFFFFFF',
+                    ],
+                ],
+            ];
+
+            $active->getStyle('A1:B1')->applyFromArray($styleArray);
 
             $rowIndex = 2;
             foreach ($rows as $rowData) {
                 foreach ($rowData as $colIndex => $value) {
-                    $active->setCellValueByColumnAndRow($colIndex + 1, $rowIndex, $value);
+                    $active->setCellValue([$colIndex + 1, $rowIndex], $value);
                 }
                 $rowIndex++;
             }

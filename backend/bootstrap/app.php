@@ -14,11 +14,18 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        $middleware->append(HandleCors::class);
-        $middleware->append(SubstituteBindings::class);
+//        $middleware->append(HandleCors::class);
+        $middleware->append(\App\Http\Middleware\OwnCors::class);
+
         $middleware->alias([
             'auth' => \App\Http\Middleware\Authenticate::class,
             'auth.admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
+        ]);
+        $middleware->api(prepend: [
+            SubstituteBindings::class,
+        ]);
+        $middleware->web(prepend: [
+            SubstituteBindings::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
