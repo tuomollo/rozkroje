@@ -2,8 +2,8 @@
 import { reactive, ref } from 'vue'
 import { createMaterialType, deleteMaterialType, state, updateMaterialType } from '../stores/appStore'
 
-const newMaterialType = reactive({ name: '' })
-const editMaterialType = reactive({ id: null, name: '' })
+const newMaterialType = reactive({ name: ''})
+const editMaterialType = reactive({ id: null, name: ''})
 const statusMessage = ref('')
 const showCreate = ref(false)
 
@@ -11,7 +11,7 @@ const createItem = async () => {
   if (!newMaterialType.name) return
   statusMessage.value = ''
   try {
-    await createMaterialType({ name: newMaterialType.name })
+    await createMaterialType({ name: newMaterialType.name})
     newMaterialType.name = ''
     showCreate.value = false
     statusMessage.value = 'Typ dodany.'
@@ -29,7 +29,9 @@ const updateItem = async () => {
   if (!editMaterialType.id) return
   statusMessage.value = ''
   try {
-    await updateMaterialType(editMaterialType.id, { name: editMaterialType.name })
+    await updateMaterialType(editMaterialType.id, {
+      name: editMaterialType.name,
+    })
     statusMessage.value = 'Typ zaktualizowany.'
     editMaterialType.id = null
   } catch (error) {

@@ -16,6 +16,7 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use ZipArchive;
 use Illuminate\Support\Facades\Log;
+use App\Services\ProgramConfig;
 
 class FileProcessingController extends Controller
 {
@@ -42,19 +43,14 @@ class FileProcessingController extends Controller
             'status' => 'pending',
             'created_by' => optional($request->user())->id,
         ]);
-
-        $unknownMaterials = $this->collectUnknownMaterials(Storage::path($path));
+        $spreadsheet = IOFactory::load(Storage::path($path));
+        $unknownMaterials = $this->collectUnknownMaterials($spreadsheet);
 
         return response()->json([
             'upload_token' => $token,
             'unknown_materials' => $unknownMaterials,
             'material_types' => MaterialType::orderBy('name')->get(),
-             // TODO: zrobić uwagi - sprawdzanie oklejania, długości itp.
-            'remarks' => [
-                'Przykładowa uwaga 1',
-                'Przykładowa uwaga 2',
-                'Przykładowa uwaga 3',
-            ],
+            'remarks' => $this->addRemarks($spreadsheet),
         ]);
     }
 
@@ -66,6 +62,7 @@ class FileProcessingController extends Controller
             'assignments' => 'array',
             'assignments.*.name' => 'required|string',
             'assignments.*.material_type_id' => 'required|exists:material_types,id',
+            'assignments.*.has_grain' => 'boolean',
         ]);
 
         $session = UploadSession::where('token', $validated['upload_token'])->firstOrFail();
@@ -79,12 +76,17 @@ class FileProcessingController extends Controller
             return response()->json(['message' => 'Upload token does not match project.'], 422);
         }
 
-        // create materials based on user assignments for previously unknown names
         $assignments = collect($validated['assignments'] ?? []);
         $assignments->each(function (array $assignment) {
-            Material::firstOrCreate(
+            $typeId = $assignment['material_type_id'];
+            $hasGrain = (bool) ($assignment['has_grain'] ?? false);
+
+            Material::updateOrCreate(
                 ['name' => $assignment['name']],
-                ['material_type_id' => $assignment['material_type_id']]
+                [
+                    'material_type_id' => $typeId,
+                    'has_grain' => $hasGrain,
+                ]
             );
         });
 
@@ -95,10 +97,13 @@ class FileProcessingController extends Controller
             'status' => 'processed',
         ]);
 
+        $spreadsheet = IOFactory::load(Storage::path($session->file_path));
+
         return response()->json([
             'download_url' => url('/api/downloads/' . $session->token),
             'files' => $result['files'],
             'file_urls' => $result['file_urls'],
+            'remarks' => $this->addRemarks($spreadsheet)
         ]);
     }
 
@@ -134,12 +139,65 @@ class FileProcessingController extends Controller
         }
         return $materialColumnIndex;
     }
+
+    private function addRemarks(Spreadsheet $spreadsheet): array
+    {
+
+        $lengthColumnIndex = ProgramConfig::getConfig('length_column_index',2);
+        $widthColumIndex = ProgramConfig::getConfig('width_column_index',3);
+        $absLengthColumnIndex = ProgramConfig::getConfig('abs_length_column_index',6);
+        $absWidthColumnIndex = ProgramConfig::getConfig('abs_width_column_index',7);
+        $thicknessColumnIndex = ProgramConfig::getConfig('thickness_column_index',5);
+        $maxHDFThickness = ProgramConfig::getConfig('max_hdf_thickness',5);
+        $nameColumnIndex = ProgramConfig::getConfig('name_column_index',2);
+        $grainContinuationColumnIndex = ProgramConfig::getConfig('grain_continuation_column_index',11);
+
+
+        $maxLength = ProgramConfig::getConfig('max_length',2800);
+        $maxWidth = ProgramConfig::getConfig('max_width',2070);
+        
+        $remarks = [
+
+        ];
+
+        $sheet = $spreadsheet->getActiveSheet();
+
+        $highestRow = $sheet->getHighestDataRow();
+        for ($i = 2; $i < $highestRow; $i++) {
+            $test = $sheet->getCell([$lengthColumnIndex, $i])->getCalculatedValue();
+            if (is_numeric($test)) {
+                if ($sheet->getCell([$lengthColumnIndex, $i])->getCalculatedValue() > $maxLength) {
+                    $remarks[] = "Wiersz {$i}: Długość większa niż {$maxLength} mm.";
+                }
+                if ($sheet->getCell([$widthColumIndex, $i])->getCalculatedValue() > $maxWidth) {
+                    $remarks[] = "Wiersz {$i}: Szerokość większa niż {$maxWidth} mm.";
+                }
+                if (
+                    ($sheet->getCell([$absLengthColumnIndex, $i])->getCalculatedValue() == 0)&&
+                    ($sheet->getCell([$absWidthColumnIndex, $i])->getCalculatedValue() == 0)&&
+                    ($sheet->getCell([$thicknessColumnIndex, $i])->getCalculatedValue() > $maxHDFThickness)
+                   ) {
+                    $remarks[] = "Wiersz {$i}: Element nie jest oklejony.";
+                   }
+
+                $name = strtoupper(trim($sheet->getCell([$nameColumnIndex, $i])->getCalculatedValue()));
+                $grainContinuation = trim($sheet->getCell([$grainContinuationColumnIndex, $i])->getCalculatedValue());
+                if ($name == 'FRONT') {
+                    if ($grainContinuation == '') {
+                        $remarks[] = "Wiersz {$i}: Brak kontynuacji słoja.";
+                    }
+                }
+            }
+        }
+
+        return $remarks;
+
+    }
     /**
      * @return array<int, string>
      */
-    private function collectUnknownMaterials(string $path): array
+    private function collectUnknownMaterials($spreadsheet): array
     {
-        $spreadsheet = IOFactory::load($path);
         $sheet = $spreadsheet->getActiveSheet();
         $highestRow = $sheet->getHighestDataRow();
         $lastColumnIndex = Coordinate::columnIndexFromString($sheet->getHighestDataColumn());

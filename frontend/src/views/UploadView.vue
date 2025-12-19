@@ -8,19 +8,23 @@ const selectedFile = ref(null)
 const uploadToken = ref('')
 const unknownMaterials = ref([])
 const materialAssignments = reactive({})
+const materialGrain = reactive({})
 const downloadUrl = ref('')
 const fileLinks = ref([])
 const statusMessage = ref('')
 const loading = ref(false)
 const remarks = ref([])
+const showUnknownList = ref(false)
 
 const resetUploadState = () => {
   uploadToken.value = ''
   unknownMaterials.value = []
   Object.keys(materialAssignments).forEach((key) => delete materialAssignments[key])
+  Object.keys(materialGrain).forEach((key) => delete materialGrain[key])
   downloadUrl.value = ''
   fileLinks.value = []
   remarks.value = []
+  showUnknownList.value = false
   statusMessage.value = ''
 }
 
@@ -44,8 +48,12 @@ const inspectUpload = async () => {
     uploadToken.value = data.upload_token
     unknownMaterials.value = data.unknown_materials
     remarks.value = data.remarks ?? []
+    showUnknownList.value = unknownMaterials.value.length > 0
     data.unknown_materials.forEach((item) => {
-      materialAssignments[item] = data.material_types[0]?.id ?? null
+      const defaultTypeId = data.material_types[0]?.id ?? null
+      materialAssignments[item] = defaultTypeId
+      const defaultType = data.material_types.find((t) => t.id === defaultTypeId)
+      materialGrain[item] = defaultType ? !!defaultType.has_grain : false
     })
     state.materialTypes = data.material_types
     if (unknownMaterials.value.length === 0) {
@@ -67,6 +75,7 @@ const processUpload = async () => {
   const assignments = unknownMaterials.value.map((name) => ({
     name,
     material_type_id: materialAssignments[name],
+    has_grain: !!materialGrain[name],
   }))
 
   if (assignments.some((item) => !item.material_type_id)) {
@@ -75,6 +84,7 @@ const processUpload = async () => {
   }
 
   loading.value = true
+  showUnknownList.value = false
   try {
     const { data } = await api.post('/uploads/process', {
       upload_token: uploadToken.value,
@@ -162,10 +172,9 @@ watch(
           </ul>
         </div>
       </div>
-      <div class="stack review">
+      <div class="stack review" v-if="showUnknownList && unknownMaterials.length">
         <h4>Nieznane materiały</h4>
-        <p v-if="unknownMaterials.length === 0">Brak pozycji do uzupełnienia.</p>
-        <div v-else class="unknown-list">
+        <div class="unknown-list">
           <div v-for="name in unknownMaterials" :key="name" class="unknown-item">
             <div class="pill">{{ name }}</div>
             <select v-model.number="materialAssignments[name]">
@@ -174,6 +183,10 @@ watch(
                 {{ type.name }}
               </option>
             </select>
+            <label class="checkbox inline">
+              <input type="checkbox" v-model="materialGrain[name]" />
+              <span>Ma usłojenie</span>
+            </label>
           </div>
         </div>
       </div>

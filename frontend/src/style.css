@@ -360,6 +360,14 @@ button:hover:not(:disabled) {
   color: #cbd5e1;
 }
 
+.checkbox.inline {
+  flex-direction: row;
+}
+
+.card-wide .actions input {
+  min-width: 220px;
+}
+
 @media (max-width: 720px) {
   .shell-body {
     grid-template-columns: 1fr;

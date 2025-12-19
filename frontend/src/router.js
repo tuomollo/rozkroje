@@ -5,6 +5,8 @@ import UploadView from './views/UploadView.vue'
 import ProjectsView from './views/ProjectsView.vue'
 import MaterialTypesView from './views/MaterialTypesView.vue'
 import UsersView from './views/UsersView.vue'
+import SettingsView from './views/SettingsView.vue'
+import MaterialsView from './views/MaterialsView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -20,6 +22,8 @@ const router = createRouter({
       meta: { requiresAuth: true, adminOnly: true },
     },
     { path: '/users', name: 'users', component: UsersView, meta: { requiresAuth: true, adminOnly: true } },
+    { path: '/settings', name: 'settings', component: SettingsView, meta: { requiresAuth: true, adminOnly: true } },
+    { path: '/materials', name: 'materials', component: MaterialsView, meta: { requiresAuth: true } },
   ],
 })
 

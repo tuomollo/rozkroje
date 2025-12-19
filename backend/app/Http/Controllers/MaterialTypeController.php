@@ -19,7 +19,9 @@ class MaterialTypeController extends Controller
             'name' => 'required|string|max:255|unique:material_types,name',
         ]);
 
-        $type = MaterialType::create($validated);
+        $type = MaterialType::create([
+            'name' => $validated['name'],
+        ]);
 
         return response()->json($type, 201);
     }
@@ -30,7 +32,9 @@ class MaterialTypeController extends Controller
             'name' => 'required|string|max:255|unique:material_types,name,' . $materialType->id,
         ]);
 
-        $materialType->update($validated);
+        $materialType->update([
+            'name' => $validated['name'],
+        ]);
 
         return response()->json($materialType);
     }

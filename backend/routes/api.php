@@ -5,6 +5,7 @@ use App\Http\Controllers\FileProcessingController;
 use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\MaterialTypeController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\SettingController;
 use App\Http\Controllers\UserManagementController;
 use Illuminate\Support\Facades\Route;
 
@@ -22,6 +23,8 @@ Route::middleware('auth:api')->group(function () {
 
     Route::get('/materials', [MaterialController::class, 'index']);
     Route::post('/materials', [MaterialController::class, 'store']);
+    Route::put('/materials/{material}', [MaterialController::class, 'update']);
+    Route::delete('/materials/{material}', [MaterialController::class, 'destroy']);
 
     Route::get('/material-types', [MaterialTypeController::class, 'index']);
     Route::middleware('auth.admin')->group(function () {
@@ -33,6 +36,11 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/users', [UserManagementController::class, 'store']);
         Route::put('/users/{user}', [UserManagementController::class, 'update']);
         Route::delete('/users/{user}', [UserManagementController::class, 'destroy']);
+
+        Route::get('/settings', [SettingController::class, 'index']);
+        Route::post('/settings', [SettingController::class, 'store']);
+        Route::put('/settings/{setting}', [SettingController::class, 'update']);
+        Route::delete('/settings/{setting}', [SettingController::class, 'destroy']);
     });
 
     Route::post('/uploads/inspect', [FileProcessingController::class, 'inspect']);

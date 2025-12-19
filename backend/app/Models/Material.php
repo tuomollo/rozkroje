@@ -12,8 +12,9 @@ class Material extends Model
     protected $fillable = [
         'name',
         'material_type_id',
+        'has_grain',
     ];
-
+ 
     public function type()
     {
         return $this->belongsTo(MaterialType::class, 'material_type_id');

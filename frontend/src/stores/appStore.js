@@ -8,6 +8,9 @@ export const state = reactive({
   projects: [],
   materialTypes: [],
   users: [],
+  settings: [],
+  materials: [],
+  materialsMeta: { current_page: 1, last_page: 1, per_page: 10, total: 0 },
 })
 
 export const isAdmin = computed(() => !!state.user?.is_admin)
@@ -16,6 +19,7 @@ const resetData = () => {
   state.projects = []
   state.materialTypes = []
   state.users = []
+  state.settings = []
 }
 
 export const restoreSession = async () => {
@@ -133,4 +137,66 @@ export const updateUser = async (userId, payload) => {
 export const deleteUser = async (userId) => {
   await api.delete(`/users/${userId}`)
   state.users = state.users.filter((u) => u.id !== userId)
+}
+
+export const loadSettings = async () => {
+  const { data } = await api.get('/settings')
+  state.settings = data
+}
+
+export const createSetting = async (payload) => {
+  const { data } = await api.post('/settings', payload)
+  state.settings.push(data)
+  state.settings.sort((a, b) => a.key.localeCompare(b.key))
+  return data
+}
+
+export const updateSetting = async (id, payload) => {
+  const { data } = await api.put(`/settings/${id}`, payload)
+  const index = state.settings.findIndex((item) => item.id === id)
+  if (index !== -1) state.settings[index] = data
+  state.settings.sort((a, b) => a.key.localeCompare(b.key))
+  return data
+}
+
+export const deleteSetting = async (id) => {
+  await api.delete(`/settings/${id}`)
+  state.settings = state.settings.filter((item) => item.id !== id)
+}
+
+export const loadMaterials = async (page = 1, search = '', perPage = 10) => {
+  const { data } = await api.get('/materials', {
+    params: { page, search, per_page: perPage },
+  })
+  state.materials = data.data ?? data
+  if (data.meta) {
+    state.materialsMeta = data.meta
+  } else {
+    state.materialsMeta = {
+      current_page: 1,
+      last_page: 1,
+      per_page: state.materials.length,
+      total: state.materials.length,
+    }
+  }
+}
+
+export const createMaterial = async (payload) => {
+  const { data } = await api.post('/materials', payload)
+  await loadMaterials(state.materialsMeta.current_page, '', state.materialsMeta.per_page)
+  return data
+}
+
+export const updateMaterial = async (id, payload) => {
+  const { data } = await api.put(`/materials/${id}`, payload)
+  await loadMaterials(state.materialsMeta.current_page, '', state.materialsMeta.per_page)
+  return data
+}
+
+export const deleteMaterial = async (id) => {
+  await api.delete(`/materials/${id}`)
+  const page = state.materials.length === 1 && state.materialsMeta.current_page > 1
+    ? state.materialsMeta.current_page - 1
+    : state.materialsMeta.current_page
+  await loadMaterials(page, '', state.materialsMeta.per_page)
 }
