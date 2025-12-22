@@ -129,19 +129,6 @@ class FileProcessingController extends Controller
         return response()->download(Storage::path($session->result_path));
     }
 
-    private function getMaterialColumnIndex($sheet) {
-        $lastColumnIndex = Coordinate::columnIndexFromString($sheet->getHighestDataColumn());
-        $materialColumnIndex = $lastColumnIndex;
-        for ($i=1; $i<=$lastColumnIndex; $i++) {
-            $value = $sheet->getCell([$i, 1]);
-            if (strToUpper($value) == 'MATERIAŁY') {
-                $materialColumnIndex = $i;
-                break;
-            }
-        }
-        return $materialColumnIndex;
-    }
-
     private function addRemarks(Spreadsheet $spreadsheet): array
     {
 
@@ -153,14 +140,13 @@ class FileProcessingController extends Controller
         $maxHDFThickness = ProgramConfig::getConfig('max_hdf_thickness',5);
         $nameColumnIndex = ProgramConfig::getConfig('name_column_index',2);
         $grainContinuationColumnIndex = ProgramConfig::getConfig('grain_continuation_column_index',11);
+        $materialColumnIndex = ProgramConfig::getConfig('material_column_index',10);
 
 
         $maxLength = ProgramConfig::getConfig('max_length',2800);
         $maxWidth = ProgramConfig::getConfig('max_width',2070);
-        
-        $remarks = [
 
-        ];
+        $remarks = [];
 
         $sheet = $spreadsheet->getActiveSheet();
 
@@ -183,8 +169,10 @@ class FileProcessingController extends Controller
                    }
 
                 $name = strtoupper(trim($sheet->getCell([$nameColumnIndex, $i])->getCalculatedValue()));
-                $material = Material::where('name', $name)->first();
+                $materialname = $sheet->getCell([$materialColumnIndex, $i])->getCalculatedValue();
+                $material = Material::where('name', $materialname)->first();
                 $grainContinuation = trim($sheet->getCell([$grainContinuationColumnIndex, $i])->getCalculatedValue());
+
                 if ($name == 'FRONT' && $material) {
                     if ($grainContinuation == '') {
                         $remarks[] = "Wiersz {$i}: Brak kontynuacji słoja.";
@@ -214,7 +202,8 @@ class FileProcessingController extends Controller
         $sheet = $spreadsheet->getActiveSheet();
         $highestRow = $sheet->getHighestDataRow();
         $lastColumnIndex = Coordinate::columnIndexFromString($sheet->getHighestDataColumn());
-        $materialColumnIndex = $this->getMaterialColumnIndex($sheet);
+        $materialColumnIndex = ProgramConfig::getConfig('material_column_index',10);
+//$materialColumnIndex = $this->getMaterialColumnIndex($sheet);
 
         $names = [];
         for ($row = 2; $row <= $highestRow; $row++) {
@@ -243,7 +232,9 @@ class FileProcessingController extends Controller
         $sheet = $spreadsheet->getActiveSheet();
         $highestRow = $sheet->getHighestDataRow();
         $lastColumnIndex = Coordinate::columnIndexFromString($sheet->getHighestDataColumn());
-        $materialColumnIndex = $this->getMaterialColumnIndex($sheet);
+        //$materialColumnIndex = $this->getMaterialColumnIndex($sheet);
+        $materialColumnIndex = ProgramConfig::getConfig('material_column_index',10);
+
         $objectNameColumnIndex = ProgramConfig::getConfig('object_name_column_index',1);
 
         $materials = Material::with('type')->get();
@@ -354,7 +345,7 @@ class FileProcessingController extends Controller
                 $startsWithNumber = $currentGroup !== '' && preg_match('/^\d/', $currentGroup);
                 if ($startsWithNumber && $currentGroup !== $previousGroup) {
                     // pusty wiersz jako odstęp
-                    if ($rowIndex > 3) {                        
+                    if ($rowIndex > 3) {
                         $rowIndex++;
                     }
                     // wiersz nagłówkowy sekcji
