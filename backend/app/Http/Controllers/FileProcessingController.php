@@ -190,6 +190,17 @@ class FileProcessingController extends Controller
                         $remarks[] = "Wiersz {$i}: Brak kontynuacji słoja.";
                     }
                 }
+
+                $width = $sheet->getCell([$widthColumIndex, $i])->getCalculatedValue();
+                $length = $sheet->getCell([$lengthColumnIndex, $i])->getCalculatedValue();
+
+                $widthHasDecimal = preg_match('/[\\.,]/', (string) $width) === 1;
+                $lengthHasDecimal = preg_match('/[\\.,]/', (string) $length) === 1;
+
+                if ($widthHasDecimal || $lengthHasDecimal) {
+                    $remarks[] = "Wiersz {$i}: Wymiary muszą być liczbami całkowitymi.";
+                }
+
             }
         }
 
