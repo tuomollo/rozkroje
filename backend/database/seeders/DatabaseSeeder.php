@@ -47,7 +47,8 @@ class DatabaseSeeder extends Seeder
         Project::firstOrCreate(
             [
                 'client_id' => 1,
-                'created_by' => $client->id
+                'created_by' => $client->id,
+                'name' => 'Projekt Demo'
             ]
         );
     }
