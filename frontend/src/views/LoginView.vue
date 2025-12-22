@@ -6,8 +6,8 @@ import { login, state } from '../stores/appStore'
 const router = useRouter()
 
 const form = reactive({
-  email: 'admin@example.com',
-  password: 'admin123',
+  email: '',
+  password: '',
 })
 
 const submit = async () => {
