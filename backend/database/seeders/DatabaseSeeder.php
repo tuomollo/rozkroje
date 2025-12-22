@@ -38,8 +38,12 @@ class DatabaseSeeder extends Seeder
             MaterialType::firstOrCreate(['name' => $typeName]);
         }
 
+        Client::firstOrCreate(
+            ['first_name' => 'Klient', 'last_name' => 'Demo', 'email' => 'klient@example.com'],
+        );
+
         Project::firstOrCreate(
-            ['name' => 'Przykładowy projekt'],
+            ['client_id' => 1],
             [
                 'client_name' => 'Klient Demo',
                 'created_by' => $admin->id,
