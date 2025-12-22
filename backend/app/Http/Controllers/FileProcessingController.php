@@ -173,7 +173,7 @@ class FileProcessingController extends Controller
                 $material = Material::where('name', $materialname)->first();
                 $grainContinuation = trim($sheet->getCell([$grainContinuationColumnIndex, $i])->getCalculatedValue());
 
-                if ($name == 'FRONT' && $material) {
+                if ($name == 'FRONT' && $material && $material->has_grain) {
                     if ($grainContinuation == '') {
                         $remarks[] = "Wiersz {$i}: Brak kontynuacji słoja.";
                     }
