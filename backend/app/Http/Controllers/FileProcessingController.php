@@ -14,6 +14,9 @@ use Illuminate\Support\Str;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
+use PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use ZipArchive;
 use Illuminate\Support\Facades\Log;
 use App\Services\ProgramConfig;
@@ -266,7 +269,10 @@ class FileProcessingController extends Controller
             MaterialProcessingHooks::onRow($rowData, $materialName);
 
             $rowsByType[$material->type->id]['type'] = $material->type;
-            $rowsByType[$material->type->id]['rows'][] = $rowData;
+            $rowsByType[$material->type->id]['rows'][] = [
+                'data' => $rowData,
+                'source_row' => $row,
+            ];
         }
 
         $exportDir = "exports/{$session->token}";
@@ -280,8 +286,8 @@ class FileProcessingController extends Controller
             $rows = $payload['rows'] ?? [];
             // sortujemy wiersze po nazwie obiektu
             usort($rows, function ($a, $b) use ($objectNameColumnIndex) {
-                $aVal = $a[$objectNameColumnIndex - 1] ?? '';
-                $bVal = $b[$objectNameColumnIndex - 1] ?? '';
+                $aVal = $a['data'][$objectNameColumnIndex - 1] ?? '';
+                $bVal = $b['data'][$objectNameColumnIndex - 1] ?? '';
                 return strcmp((string) $aVal, (string) $bVal);
             });
 
@@ -340,7 +346,11 @@ class FileProcessingController extends Controller
                 ],
             ];
 
-            foreach ($rows as $rowData) {
+            $rowMap = [1 => 2];
+
+            foreach ($rows as $rowPayload) {
+                $rowData = $rowPayload['data'];
+                $sourceRowIndex = $rowPayload['source_row'];
                 $currentGroup = trim((string) ($rowData[0] ?? ''));
                 $startsWithNumber = $currentGroup !== '' && preg_match('/^\d/', $currentGroup);
                 if ($startsWithNumber && $currentGroup !== $previousGroup) {
@@ -365,9 +375,12 @@ class FileProcessingController extends Controller
                     $active->setCellValue([$colIndex + 1, $rowIndex], $value);
                 }
 
+                $rowMap[$sourceRowIndex] = $rowIndex;
                 $previousGroup = $startsWithNumber ? $currentGroup : $previousGroup;
                 $rowIndex++;
             }
+
+            $this->copyRowDrawings($sheet, $active, $rowMap);
 
             $fileName = Str::slug($clientName.'-'.$project->name.'-'.$type->name) . '.xlsx';
             $fullPath = Storage::path($exportDir . '/' . $fileName);
@@ -423,5 +436,52 @@ class FileProcessingController extends Controller
                 ];
             }, $files),
         ];
+    }
+
+    /**
+     * @param array<int, int> $rowMap mapuje numer wiersza z pliku źródłowego na numer w pliku wynikowym
+     */
+    private function copyRowDrawings(Worksheet $sourceSheet, Worksheet $targetSheet, array $rowMap): void
+    {
+        foreach ($sourceSheet->getDrawingCollection() as $drawing) {
+            $coordinate = $drawing->getCoordinates();
+            [$column, $row] = Coordinate::coordinateFromString($coordinate);
+
+            if (!isset($rowMap[$row])) {
+                continue;
+            }
+
+            $targetCoordinate = $column . $rowMap[$row];
+
+            if ($drawing instanceof MemoryDrawing) {
+                $clone = new MemoryDrawing();
+                $clone->setName($drawing->getName());
+                $clone->setDescription($drawing->getDescription());
+                $clone->setImageResource($drawing->getImageResource());
+                $clone->setRenderingFunction($drawing->getRenderingFunction());
+                $clone->setMimeType($drawing->getMimeType());
+                $clone->setHeight($drawing->getHeight());
+                $clone->setWidth($drawing->getWidth());
+                $clone->setOffsetX($drawing->getOffsetX());
+                $clone->setOffsetY($drawing->getOffsetY());
+                $clone->setCoordinates($targetCoordinate);
+                $clone->setWorksheet($targetSheet);
+                continue;
+            }
+
+            if ($drawing instanceof Drawing) {
+                $clone = new Drawing();
+                $clone->setName($drawing->getName());
+                $clone->setDescription($drawing->getDescription());
+                $clone->setPath($drawing->getPath());
+                $clone->setHeight($drawing->getHeight());
+                $clone->setWidth($drawing->getWidth());
+                $clone->setOffsetX($drawing->getOffsetX());
+                $clone->setOffsetY($drawing->getOffsetY());
+                $clone->setResizeProportional($drawing->getResizeProportional());
+                $clone->setCoordinates($targetCoordinate);
+                $clone->setWorksheet($targetSheet);
+            }
+        }
     }
 }
