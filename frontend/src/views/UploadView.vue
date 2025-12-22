@@ -19,6 +19,15 @@ const showUnknownList = ref(false)
 const projectSearch = ref('')
 const isDownloading = computed(() => !!downloading.value)
 
+const updateRemarks = (list = []) => {
+  const statusByText = new Map(remarks.value.map((item) => [item.text, item.resolved]))
+  remarks.value = list.map((text, index) => ({
+    id: `${index}-${text}`,
+    text,
+    resolved: statusByText.get(text) ?? false,
+  }))
+}
+
 const resetUploadState = () => {
   uploadToken.value = ''
   unknownMaterials.value = []
@@ -50,7 +59,7 @@ const inspectUpload = async () => {
     })
     uploadToken.value = data.upload_token
     unknownMaterials.value = data.unknown_materials
-    remarks.value = data.remarks ?? []
+    updateRemarks(data.remarks ?? [])
     showUnknownList.value = unknownMaterials.value.length > 0
     data.unknown_materials.forEach((item) => {
       const defaultTypeId = data.material_types[0]?.id ?? null
@@ -96,7 +105,7 @@ const processUpload = async () => {
     })
     downloadUrl.value = data.download_url
     fileLinks.value = data.file_urls ?? []
-    remarks.value = data.remarks ?? remarks.value
+    updateRemarks(data.remarks ?? remarks.value.map((item) => item.text))
     statusMessage.value = 'Pliki wygenerowane. Poniżej znajdziesz link do ZIP.'
   } catch (error) {
     statusMessage.value = error.response?.data?.message ?? 'Generowanie nie powiodło się.'
@@ -213,7 +222,17 @@ const filteredProjects = computed(() => {
         <div v-if="remarks.length" class="remarks">
           <p>Uwagi:</p>
           <ul>
-            <li v-for="note in remarks" :key="note">{{ note }}</li>
+            <li
+              v-for="note in remarks"
+              :key="note.id"
+              class="remark-row"
+              :class="{ resolved: note.resolved }"
+            >
+              <label class="checkbox inline">
+                <input type="checkbox" v-model="note.resolved" />
+                <span>{{ note.text }}</span>
+              </label>
+            </li>
           </ul>
         </div>
         <div v-if="fileLinks.length" class="file-links">
