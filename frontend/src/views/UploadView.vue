@@ -13,9 +13,11 @@ const downloadUrl = ref('')
 const fileLinks = ref([])
 const statusMessage = ref('')
 const loading = ref(false)
+const downloading = ref('')
 const remarks = ref([])
 const showUnknownList = ref(false)
 const projectSearch = ref('')
+const isDownloading = computed(() => !!downloading.value)
 
 const resetUploadState = () => {
   uploadToken.value = ''
@@ -103,6 +105,38 @@ const processUpload = async () => {
   }
 }
 
+const filenameFromDisposition = (disposition) => {
+  if (!disposition) return null
+  const utfMatch = disposition.match(/filename\*=UTF-8''([^;]+)/i)
+  if (utfMatch?.[1]) return decodeURIComponent(utfMatch[1])
+  const asciiMatch = disposition.match(/filename=\"?([^\";]+)\"?/i)
+  return asciiMatch?.[1] ?? null
+}
+
+const downloadFile = async (url, fallbackName = 'pobranie') => {
+  if (!url) return
+  downloading.value = url
+  try {
+    const response = await api.get(url, { responseType: 'blob' })
+    const blob = new Blob([response.data])
+    const disposition = response.headers['content-disposition']
+    const filename =
+      filenameFromDisposition(disposition) || fallbackName || url.split('/').pop() || 'plik'
+    const href = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = href
+    link.download = filename
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    URL.revokeObjectURL(href)
+  } catch (error) {
+    statusMessage.value = error.response?.data?.message ?? 'Pobieranie nie powiodło się.'
+  } finally {
+    downloading.value = ''
+  }
+}
+
 onMounted(async () => {
   if (!state.projects.length) await loadProjects()
   if (!state.materialTypes.length) await loadMaterialTypes()
@@ -166,9 +200,16 @@ const filteredProjects = computed(() => {
           </button>
         </div>
         <p v-if="statusMessage" class="hint">{{ statusMessage }}</p>
-        <p v-if="downloadUrl" class="success">
-          Pliki gotowe: <a :href="downloadUrl" target="_blank" rel="noopener">pobierz ZIP</a>
-        </p>
+        <div v-if="downloadUrl" class="success download-row">
+          <span>Pliki gotowe! </span>
+          <button
+            type="button"
+            @click="downloadFile(downloadUrl, 'wyniki.zip')"
+            :disabled="isDownloading"
+          >
+            {{ downloading === downloadUrl ? 'Pobieranie...' : 'Pobierz ZIP' }}
+          </button>
+        </div>
         <div v-if="remarks.length" class="remarks">
           <p>Uwagi:</p>
           <ul>
@@ -178,8 +219,29 @@ const filteredProjects = computed(() => {
         <div v-if="fileLinks.length" class="file-links">
           <p>Arkusze per materiał:</p>
           <ul>
-            <li v-for="file in fileLinks" :key="file.name">
-              <a :href="file.url" target="_blank" rel="noopener">{{ file.name }}</a>
+            <li v-for="file in fileLinks" :key="file.name" class="file-link">
+              <span>{{ file.name }}&nbsp;</span>
+              <button
+                class="ghost icon-button"
+                type="button"
+                @click="downloadFile(file.url, file.name)"
+                :disabled="isDownloading"
+                :aria-label="`Pobierz ${file.name}`"
+              >
+                <span v-if="downloading === file.url">Pobieranie...</span>
+                <svg
+                  v-else
+                  class="icon-download"
+                  viewBox="0 0 24 24"
+                  role="img"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  <path
+                    d="M12 3a1 1 0 0 1 1 1v9.586l2.293-2.293a1 1 0 1 1 1.414 1.414l-4 4a1 1 0 0 1-1.414 0l-4-4a1 1 0 0 1 1.414-1.414L11 13.586V4a1 1 0 0 1 1-1zm-7 14a1 1 0 0 1 1 1v1h12v-1a1 1 0 1 1 2 0v2a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-2a1 1 0 0 1 1-1z"
+                  />
+                </svg>
+              </button>
             </li>
           </ul>
         </div>
@@ -205,3 +267,18 @@ const filteredProjects = computed(() => {
     </div>
   </section>
 </template>
+
+<style scoped>
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem 0.6rem;
+}
+
+.icon-download {
+  width: 1.1em;
+  height: 1.1em;
+  fill: currentColor;
+}
+</style>

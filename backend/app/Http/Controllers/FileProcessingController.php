@@ -200,7 +200,6 @@ class FileProcessingController extends Controller
                 if ($widthHasDecimal || $lengthHasDecimal) {
                     $remarks[] = "Wiersz {$i}: Wymiary muszą być liczbami całkowitymi.";
                 }
-
             }
         }
 
