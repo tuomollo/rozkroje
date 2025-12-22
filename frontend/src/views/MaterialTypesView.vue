@@ -64,10 +64,6 @@ const removeItem = async (typeId) => {
     </div>
     <form v-if="showCreate" class="form-grid" @submit.prevent="createItem">
       <input v-model="newMaterialType.name" placeholder="Nazwa typu" required />
-      <label class="checkbox">
-        <input type="checkbox" v-model="newMaterialType.has_grain" />
-        <span>Ma usłojenie</span>
-      </label>
       <button type="submit">Nowy</button>
     </form>
     <p v-if="statusMessage" class="hint">{{ statusMessage }}</p>
@@ -86,12 +82,6 @@ const removeItem = async (typeId) => {
             <div class="inline-field">
               <label>Nazwa
                 <input v-model="editMaterialType.name" placeholder="Nazwa" />
-              </label>
-            </div>
-            <div class="inline-field">
-              <label class="checkbox">
-                <input type="checkbox" v-model="editMaterialType.has_grain" />
-                <span>Ma usłojenie</span>
               </label>
             </div>
             <div class="actions">

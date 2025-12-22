@@ -156,6 +156,12 @@ const prevPage = () => {
                 </select>
               </label>
             </div>
+            <div class="inline-field">
+              <label class="checkbox">
+                <input type="checkbox" v-model="editMaterial.has_grain" />
+                <span>Ma usłojenie</span>
+              </label>
+            </div>
             <div class="actions">
               <button @click="submitEdit">Zapisz</button>
               <button class="ghost" @click="editMaterial.id = null">Anuluj</button>
