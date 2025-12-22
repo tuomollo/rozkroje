@@ -40,15 +40,14 @@ class DatabaseSeeder extends Seeder
             MaterialType::firstOrCreate(['name' => $typeName]);
         }
 
-        Client::firstOrCreate(
+        $client = Client::firstOrCreate(
             ['first_name' => 'Klient', 'last_name' => 'Demo', 'email' => 'klient@example.com'],
         );
 
         Project::firstOrCreate(
-            ['client_id' => 1],
             [
-                'client_name' => 'Klient Demo',
-                'created_by' => $admin->id,
+                'client_id' => 1,
+                'created_by' => $client->id
             ]
         );
     }
