@@ -228,7 +228,7 @@ const filteredProjects = computed(() => {
                 :disabled="isDownloading"
                 :aria-label="`Pobierz ${file.name}`"
               >
-                <span v-if="downloading === file.url">Pobieranie...</span>
+                <span v-if="downloading === file.url">...</span>
                 <svg
                   v-else
                   class="icon-download"

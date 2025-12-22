@@ -28,7 +28,7 @@ const handleLogout = () => {
           <div class="chip-name">{{ state.user.name }}</div>
           <div class="chip-role">{{ state.user.is_admin ? 'Administrator' : 'Użytkownik' }}</div>
         </div>
-        <button class="icon-button" @click="handleLogout" title="Wyloguj">⏻</button>
+        <button @click="handleLogout" title="Wyloguj">Wyloguj</button>
       </div>
     </header>
 
