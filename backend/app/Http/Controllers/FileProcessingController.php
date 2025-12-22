@@ -157,28 +157,30 @@ class FileProcessingController extends Controller
         for ($i = 2; $i < $highestRow; $i++) {
             $test = $sheet->getCell([$lengthColumnIndex, $i])->getCalculatedValue();
             if (is_numeric($test)) {
+                $name = trim($sheet->getCell([$nameColumnIndex, $i])->getCalculatedValue());
+                $name_upper = mb_strtoupper($name);
                 if ($sheet->getCell([$lengthColumnIndex, $i])->getCalculatedValue() > $maxLength) {
-                    $remarks[] = "Wiersz {$i}: Długość większa niż {$maxLength} mm.";
+                    $remarks[] = "Wiersz {$i}, element {$name}: Długość większa niż {$maxLength} mm.";
                 }
                 if ($sheet->getCell([$widthColumIndex, $i])->getCalculatedValue() > $maxWidth) {
-                    $remarks[] = "Wiersz {$i}: Szerokość większa niż {$maxWidth} mm.";
+                    $remarks[] = "Wiersz {$i}, element {$name}: Szerokość większa niż {$maxWidth} mm.";
                 }
                 if (
                     ($sheet->getCell([$absLengthColumnIndex, $i])->getCalculatedValue() == 0)&&
                     ($sheet->getCell([$absWidthColumnIndex, $i])->getCalculatedValue() == 0)&&
                     ($sheet->getCell([$thicknessColumnIndex, $i])->getCalculatedValue() > $maxHDFThickness)
                    ) {
-                    $remarks[] = "Wiersz {$i}: Element nie jest oklejony.";
+                    $remarks[] = "Wiersz {$i}, element {$name}: Element nie jest oklejony.";
                    }
 
-                $name = strtoupper(trim($sheet->getCell([$nameColumnIndex, $i])->getCalculatedValue()));
+
                 $materialname = $sheet->getCell([$materialColumnIndex, $i])->getCalculatedValue();
                 $material = Material::where('name', $materialname)->first();
                 $grainContinuation = trim($sheet->getCell([$grainContinuationColumnIndex, $i])->getCalculatedValue());
 
                 if ($name == 'FRONT' && $material && $material->has_grain) {
                     if ($grainContinuation == '') {
-                        $remarks[] = "Wiersz {$i}: Brak kontynuacji słoja.";
+                        $remarks[] = "Wiersz {$i}, element {$name}: Brak kontynuacji słoja.";
                     }
                 }
 
@@ -189,7 +191,7 @@ class FileProcessingController extends Controller
                 $lengthHasDecimal = preg_match('/[\\.,]/', (string) $length) === 1;
 
                 if ($widthHasDecimal || $lengthHasDecimal) {
-                    $remarks[] = "Wiersz {$i}: Wymiary muszą być liczbami całkowitymi.";
+                    $remarks[] = "Wiersz {$i}, element {$name}: Wymiary muszą być liczbami całkowitymi.";
                 }
             }
         }
